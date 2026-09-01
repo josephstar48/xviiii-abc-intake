@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  postgres-db:
+    container_name: starter-postgres
+    image: postgres # use latest official postgres version
+    restart: always
+    environment:
+      POSTGRES_USER: starter
+      POSTGRES_PASSWORD: starter
+      POSTGRES_DB: starter_dev
+      POSTGRES_HOST_AUTH_METHOD: password
+    ports:
+      - "5434:5432"
+
+volumes:
+  postgresql_data:
+    driver: local
+
+networks:
+  monitoring:
+    driver: bridge

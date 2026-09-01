@@ -1,0 +1,1 @@
+scp -i /etc/ssh/whatever.pem init-remote.sh ubuntu@13.58.208.251:/home/ubuntu

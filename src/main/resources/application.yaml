@@ -1,0 +1,25 @@
+logging:
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss.SSS, UTC
+
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: dragon-spark
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5434}/${POSTGRES_DB:starter_dev}
+    username: ${POSTGRES_USERNAME:starter}
+    password: ${POSTGRES_PASSWORD:starter}
+    driver-class-name: org.postgresql.Driver
+
+file:
+  upload-dir: /Users/a2313895/Desktop/usasoc-hackathon/documents
+
+gemini:
+  api-key: ${GEMINI_API_KEY:}
+  model: ${GEMINI_MODEL:gemini-3.5-flash}

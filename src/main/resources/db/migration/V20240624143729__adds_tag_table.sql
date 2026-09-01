@@ -1,0 +1,4 @@
+CREATE TABLE tag (
+    id int PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name varchar(64)
+);
