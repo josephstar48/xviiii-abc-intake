@@ -19,9 +19,12 @@ const AppContent = () => {
       <main>
         <Routes>
           <Route path={'/'} element={<LandingPage />} />
+          <Route path={'/innovation-cells'} element={<InnovationsCells />} />
           <Route path={'/innovationCell'} element={<InnovationsCells />} />
+          <Route path={'/innovationcell'} element={<InnovationsCells />} />
           <Route path={'/status'} element={<IdeasStatusGrid />} />
           <Route path={'/admin'} element={<AdminDashboard />} />
+          <Route path={'/errorPage'} element={<ErrorPage />} />
           <Route path={'*'} element={<ErrorPage />} />
         </Routes>
       </main>

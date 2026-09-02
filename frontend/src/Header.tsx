@@ -39,10 +39,15 @@ export const Header = () => {
     };
 
     const menuItems = [
-        { text: 'INNOVATION CELLS', href: '/innovationCell' },
+        { text: 'INNOVATION CELLS', href: '/innovation-cells' },
         { text: 'SUBMISSION STATUS', href: '/status' },
         { text: 'CORPS ADMIN', href: '/admin' },
     ];
+
+    const handleNavigate = (href: string) => {
+        navigate(href);
+        setIsOpen(false);
+    };
 
     return (
         <AppBar position="static" sx={{
@@ -69,7 +74,7 @@ export const Header = () => {
                     <Box display="flex" flexGrow={1} justifyContent="center">
                         <Box>
                             {menuItems.map((item) => (
-                                <Button key={item.text} color="inherit" href={item.href} sx={{ mx: 2 }} onClick={() => navigate(item.href)}>
+                                <Button key={item.text} color="inherit" sx={{ mx: 2 }} onClick={() => handleNavigate(item.href)}>
                                     <StyledLink variant="button">{item.text}</StyledLink>
                                 </Button>
                             ))}
@@ -106,7 +111,7 @@ export const Header = () => {
             >
                 <List>
                     {menuItems.map((item) => (
-                        <ListItem button key={item.text} component="a" href={item.href} onClick={handleClick}>
+                        <ListItem button key={item.text} onClick={() => handleNavigate(item.href)}>
                             <ListItemText primary={item.text} />
                         </ListItem>
                     ))}

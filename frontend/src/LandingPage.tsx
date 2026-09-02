@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import { Box, Button, Container, Stack, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import { useGlobalContext } from "./context/GlobalProvider";
+import { useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
   const { isPageHasBackgroundImage, setPageHasBackgroundImage } = useGlobalContext();
   useEffect(() => {
     setPageHasBackgroundImage(false);
@@ -90,7 +92,7 @@ const LandingPage = () => {
               </Typography>
               <Button
                 variant="contained"
-                href="/innovationCell"
+                onClick={() => navigate('/innovation-cells')}
                 sx={{
                   backgroundColor: '#ffd600',
                   color: 'black',
