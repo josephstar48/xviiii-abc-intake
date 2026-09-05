@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Box, Button, Grid, Stack, Typography} from '@mui/material';
+import {Alert, Box, Button, CircularProgress, Grid, Stack, Typography} from '@mui/material';
 import {TagFilter} from "./TagChip";
 import {InnovationCellCard, Tag} from "./InnovationCellCard";
 import {getAllInnovationCells, getAllTags} from "./Client";
@@ -28,6 +28,8 @@ const InnovationsCells = () => {
     const [displayedCells, setDisplayedCells] = useState<InnovationCellProp[]>([]);
     const filterTag = useRef<Tag[]>([]);
     const [submissionIsOpen, setSubmissionIsOpen] = useState(false)
+    const [cellsAreLoading, setCellsAreLoading] = useState(true);
+    const [cellsLoadError, setCellsLoadError] = useState('');
 
     const [, setIdeas] = useState<Idea[]>([]);
     const [, setLoading] = useState<boolean>(true);
@@ -55,17 +57,20 @@ const InnovationsCells = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        getAllTags().then((response) => {
-            filterTag.current = response;
-            setSelectedTags(response)
-        })
+        setCellsAreLoading(true);
+        setCellsLoadError('');
 
-        getAllInnovationCells().then((response) => {
-            setDisplayedCells(response)
-        }).catch((error) => {
-            console.error("Error fetching data:", error);
-            navigate('/errorPage');
-        })
+        Promise.all([getAllTags(), getAllInnovationCells()])
+            .then(([tagsResponse, cellsResponse]) => {
+                filterTag.current = tagsResponse;
+                setSelectedTags(tagsResponse);
+                setDisplayedCells(cellsResponse);
+            })
+            .catch((error) => {
+                console.error("Error fetching innovation cell data:", error);
+                setCellsLoadError('Innovation cell data is unavailable. Check that the backend API is running, then refresh.');
+            })
+            .finally(() => setCellsAreLoading(false));
     }, []);
 
     function handleClick() {
@@ -115,28 +120,36 @@ const InnovationsCells = () => {
                                 fontSize: {xs: '1.1rem', sm: '1.75rem', md: '2.4rem'}
                             }} color={'white'}>JIOP | ODS | DIVISION INNOVATION</Typography>
 
-                <Stack
-                    direction={'row'}
-                    spacing={{xs: 1, sm: 2, md: 4}}
-                    useFlexGap
-                    flexWrap="wrap"
-                    justifyContent="center"
-                    sx={{maxWidth: 1100, px: 1}}
-                >
-                    {filterTag.current.map((tag) => (
-                        <TagFilter
-                            selectedTags={selectedTags}
-                            onClick={() => {
-                                if (selectedTags.includes(tag)) {
-                                    setSelectedTags(selectedTags.filter(item => item !== tag));
-                                } else {
-                                    setSelectedTags([...selectedTags, tag])
-                                }
-                            }}
-                            key={tag.id} chipName={tag.name}
-                        />
-                    ))}
-                </Stack>
+                {cellsLoadError && (
+                    <Alert severity="warning" sx={{width: '100%', maxWidth: 900, mb: 3}}>
+                        {cellsLoadError}
+                    </Alert>
+                )}
+
+                {!cellsLoadError && (
+                    <Stack
+                        direction={'row'}
+                        spacing={{xs: 1, sm: 2, md: 4}}
+                        useFlexGap
+                        flexWrap="wrap"
+                        justifyContent="center"
+                        sx={{maxWidth: 1100, px: 1}}
+                    >
+                        {filterTag.current.map((tag) => (
+                            <TagFilter
+                                selectedTags={selectedTags}
+                                onClick={() => {
+                                    if (selectedTags.includes(tag)) {
+                                        setSelectedTags(selectedTags.filter(item => item !== tag));
+                                    } else {
+                                        setSelectedTags([...selectedTags, tag])
+                                    }
+                                }}
+                                key={tag.id} chipName={tag.name}
+                            />
+                        ))}
+                    </Stack>
+                )}
 
                 <Button variant={'contained'}
                         onClick={handleClick}
@@ -156,30 +169,33 @@ const InnovationsCells = () => {
                             sx={{mb: 4, opacity: 0.7, fontWeight: 300}}>
                     Threat Informed | Strategically Driven | Operationally Focused | Tactically Prepared
                 </Typography>
+                {cellsAreLoading && <CircularProgress sx={{my: 4}} />}
+
                 <Grid container spacing={{xs: 2, md: 4}} justifyContent="center" sx={{width: '100%', mx: 0}}>
+                    {!cellsAreLoading && !cellsLoadError && (
+                        selectedTags.length === filterTag.current.length ?
+                            displayedCells.map((cell) => {
+                                return (
+                                    <Grid item xs={12} sm={6} md={4} lg={3} key={cell.id} sx={{display: 'flex', justifyContent: 'center'}}>
+                                        <InnovationCellCard {...cell} />
+                                    </Grid>
+                                );
+                            }) :
+                            displayedCells.map((cell) => {
+                                    const selectedTagNames = selectedTags.map(tag => tag.name);
+                                    const hasMatchingTag = cell.tags.some(tag => selectedTagNames.includes(tag.name));
 
-                    {selectedTags.length === filterTag.current.length ?
-                        displayedCells.map((cell) => {
-                            return (
-                                <Grid item xs={12} sm={6} md={4} lg={3} key={cell.id} sx={{display: 'flex', justifyContent: 'center'}}>
-                                    <InnovationCellCard {...cell} />
-                                </Grid>
-                            );
-                        }) :
-                        displayedCells.map((cell) => {
-                                const selectedTagNames = selectedTags.map(tag => tag.name);
-                                const hasMatchingTag = cell.tags.some(tag => selectedTagNames.includes(tag.name));
-
-                                if (hasMatchingTag) {
-                                    return (
-                                        <Grid item xs={12} sm={6} md={4} lg={3} key={cell.id} sx={{display: 'flex', justifyContent: 'center'}}>
-                                            <InnovationCellCard {...cell} />
-                                        </Grid>
-                                    );
+                                    if (hasMatchingTag) {
+                                        return (
+                                            <Grid item xs={12} sm={6} md={4} lg={3} key={cell.id} sx={{display: 'flex', justifyContent: 'center'}}>
+                                                <InnovationCellCard {...cell} />
+                                            </Grid>
+                                        );
+                                    }
+                                    return null;
                                 }
-                                return null;
-                            }
-                        )}
+                            )
+                    )}
                 </Grid>
                     <Typography
                         variant="h4"
