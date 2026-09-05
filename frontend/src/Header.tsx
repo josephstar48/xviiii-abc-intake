@@ -18,6 +18,7 @@ import {useNavigate} from "react-router-dom";
 const StyledImage = styled('img')({
     height: '60px',
     marginRight: '16px',
+    flexShrink: 0,
 });
 
 const StyledLink = styled(Typography)(() => ({
@@ -55,7 +56,8 @@ export const Header = () => {
         }}>
             <Toolbar
                 sx={{
-                    margin: '0.5rem'
+                    margin: {xs: '0.25rem 0', sm: '0.5rem'},
+                    minHeight: {xs: 64, sm: 72},
                 }}
             >
                 <Box
@@ -63,24 +65,31 @@ export const Header = () => {
                     justifyContent="space-between"
                     alignItems="center"
                     width="100%"
+                    gap={1}
                 >
                     <StyledImage
                         src="/favicon_dragonSpark.png"
                         alt="Dragon Spark logo"
+                        sx={{height: {xs: 44, sm: 60}, marginRight: {xs: 1, sm: 2}}}
                     />
-                    <Typography variant="h5" fontWeight="bold" color="white">
+                    <Typography
+                        variant="h5"
+                        fontWeight="bold"
+                        color="white"
+                        sx={{fontSize: {xs: '1.15rem', sm: '1.5rem'}, whiteSpace: 'nowrap'}}
+                    >
                         Dragon Spark
                     </Typography>
-                    <Box display="flex" flexGrow={1} justifyContent="center">
+                    <Box display={{xs: 'none', md: 'flex'}} flexGrow={1} justifyContent="center">
                         <Box>
                             {menuItems.map((item) => (
-                                <Button key={item.text} color="inherit" sx={{ mx: 2 }} onClick={() => handleNavigate(item.href)}>
+                                <Button key={item.text} color="inherit" sx={{ mx: {md: 0.5, lg: 2} }} onClick={() => handleNavigate(item.href)}>
                                     <StyledLink variant="button">{item.text}</StyledLink>
                                 </Button>
                             ))}
                         </Box>
                     </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
+                    <Box display={{xs: 'none', md: 'flex'}} alignItems="center" gap={1}>
                         <Typography variant="body2" color="white" fontWeight="bold">
                             XVIII Airborne Corps
                         </Typography>
@@ -97,7 +106,7 @@ export const Header = () => {
                     color="inherit"
                     aria-label="menu"
                     onClick={handleClick}
-                    sx={{ display: { sm: 'none' } }}
+                    sx={{ display: { xs: 'inline-flex', md: 'none' }, ml: 'auto' }}
                 >
                     <MenuIcon />
                 </IconButton>
@@ -107,9 +116,9 @@ export const Header = () => {
                 anchor="right"
                 open={isOpen}
                 onClose={handleClick}
-                sx={{ display: { sm: 'none' } }}
+                sx={{ display: { md: 'none' } }}
             >
-                <List>
+                <List sx={{minWidth: 260}}>
                     {menuItems.map((item) => (
                         <ListItem button key={item.text} onClick={() => handleNavigate(item.href)}>
                             <ListItemText primary={item.text} />

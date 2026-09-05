@@ -98,8 +98,8 @@ const AdminDashboard = () => {
     );
 
     return (
-        <Box sx={{width: '100%', p: 3}}>
-            <Typography variant="h4" component="h1" fontWeight="bold" color="white" mb={1}>
+        <Box sx={{width: '100%', p: {xs: 0, sm: 2, md: 3}, pb: 4}}>
+            <Typography variant="h4" component="h1" fontWeight="bold" color="white" mb={1} sx={{fontSize: {xs: '1.75rem', sm: '2.125rem'}}}>
                 Corps Admin
             </Typography>
             <Typography variant="body1" color={theme.palette.text.secondary} mb={3}>
@@ -110,22 +110,24 @@ const AdminDashboard = () => {
                 <Grid item xs={12} md={4}>{renderCountGroup('By Capability Lane', laneCounts)}</Grid>
                 <Grid item xs={12} md={4}>{renderCountGroup('By Echelon', echelonCounts)}</Grid>
             </Grid>
-            <Box sx={{height: 560, width: '100%'}}>
-                <DataGrid
-                    rows={ideas}
-                    columns={columns}
-                    loading={loading}
-                    sx={{
-                        '& .MuiDataGrid-columnHeaders': {
-                            backgroundColor: theme.palette.grey[900],
-                            color: theme.palette.secondary.main,
-                            fontWeight: 'bold',
-                        },
-                        '& .MuiSvgIcon-root': {
-                            color: '#C4E0E3'
-                        },
-                    }}
-                />
+            <Box sx={{width: '100%', overflowX: 'auto'}}>
+                <Box sx={{height: {xs: 520, md: 560}, minWidth: {xs: 940, md: '100%'}}}>
+                    <DataGrid
+                        rows={ideas}
+                        columns={columns}
+                        loading={loading}
+                        sx={{
+                            '& .MuiDataGrid-columnHeaders': {
+                                backgroundColor: theme.palette.grey[900],
+                                color: theme.palette.secondary.main,
+                                fontWeight: 'bold',
+                            },
+                            '& .MuiSvgIcon-root': {
+                                color: '#C4E0E3'
+                            },
+                        }}
+                    />
+                </Box>
             </Box>
         </Box>
     );

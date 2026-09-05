@@ -25,10 +25,10 @@ export const IdeaViewerModal = (props: IdeaViewerModalProps) => {
     return (
         <GenericModal open={open} setOpen={setOpen}>
             <Typography variant='h4' pb={2}>Problem Info</Typography>
-            <Stack direction='row' alignItems='center' mb={2}>
+            <Stack direction={{xs: 'column', sm: 'row'}} alignItems={{xs: 'flex-start', sm: 'center'}} mb={2} gap={1}>
                 <FormLabel sx={{color: theme.palette.common.black, marginRight: 2}}>Status:</FormLabel>
                 {idea && <StageChip stage={Stage[idea.stage]}/>}
-                <FormLabel sx={{color: theme.palette.common.black, mx: 2}}>Assigned To:</FormLabel>
+                <FormLabel sx={{color: theme.palette.common.black, mx: {xs: 0, sm: 2}}}>Assigned To:</FormLabel>
                 {idea?.innovationCell
                     ? <Chip
                         label={idea.innovationCell.name.toUpperCase()}
@@ -52,11 +52,11 @@ export const IdeaViewerModal = (props: IdeaViewerModalProps) => {
             <FormLabel sx={{color: theme.palette.common.black}}>Title</FormLabel>
             <TextField size='small' variant='outlined' fullWidth value={idea?.title ?? ''}
                        sx={{...inputFieldStyle, mb: 2}}/>
-            <Stack direction='row' spacing={2} mb={2}>
+            <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} mb={2}>
                 <TextField size='small' label="Echelon" fullWidth value={idea?.unitDivision ?? ''}/>
                 <TextField size='small' label="Capability Lane" fullWidth value={idea?.capabilityLane ?? ''}/>
             </Stack>
-            <Stack direction='row' spacing={2} mb={2}>
+            <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} mb={2}>
                 <TextField size='small' label="Problem Type" fullWidth value={idea?.problemType ?? ''}/>
                 <TextField size='small' label="Urgency" fullWidth value={idea?.urgency ?? ''}/>
             </Stack>

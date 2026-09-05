@@ -32,9 +32,9 @@ export const PageLayout = (props: PageLayoutProps) => {
         <Box
             sx={{
                 display: 'grid',
-                gridTemplateRows: `80px 1fr ${footer?.height ? footer.height + 'px' : ''}`,
+                gridTemplateRows: `auto minmax(0, 1fr) ${footer?.height ? footer.height + 'px' : ''}`,
                 gridTemplateColumns: '100%',
-                height: '100vh',
+                minHeight: '100vh',
                 backgroundColor: theme.palette.background.default,
             }}
         >
@@ -48,15 +48,18 @@ export const PageLayout = (props: PageLayoutProps) => {
                     width: '100%',
                     maxHeight: '100%',
                     overflowY: 'auto',
+                    overflowX: 'hidden',
                 }}
             >
                 {limitContentWidth && !isPageHasBackgroundImage ? <Box
                         sx={{
                             maxWidth: '1600px',
+                            width: '100%',
                             mx: 'auto',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'center',
+                            px: {xs: 2, sm: 3, lg: 4},
                         }}
                     >
                         {children}
@@ -66,8 +69,8 @@ export const PageLayout = (props: PageLayoutProps) => {
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'center',
-                        overflow:'hidden',
-                        position: 'fixed'
+                        overflowX:'hidden',
+                        width: '100%',
                     }}
                 >
                     {children}

@@ -79,40 +79,49 @@ const InnovationsCells = () => {
                     bgcolor: theme.palette.background.default,
                     backgroundImage: "linear-gradient(rgba(18, 18, 18, 0.84), rgba(18, 18, 18, 0.84)), url('/XVIII ABC Dragon Spark Logo-modified.png')",
                     backgroundPosition: 'center',
-                    backgroundAttachment: 'fixed',
+                    backgroundAttachment: {xs: 'scroll', md: 'fixed'},
                     backgroundSize: 'min(68vw, 680px)',
                     backgroundRepeat: 'no-repeat',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
+                    width: '100%',
+                    overflowX: 'hidden',
+                    px: {xs: 2, sm: 3},
                 }}>
                 <Typography variant="h1" align="center" color="white"
-                            sx={{mt: 8,
+                            sx={{mt: {xs: 4, md: 8},
                                 mb: 2,
                                 px: 2,
-                                maxWidth: '5xl',
                                 textShadow: `0px 0px 15px #0A84FF, 0px 0px 15px #FFD700`,
                                 fontWeight: 'bold',
-                                letterSpacing: '8px'}}>
+                                letterSpacing: 0,
+                                fontSize: {xs: '2.5rem', sm: '3.5rem', md: '5rem', lg: '6rem'},
+                                overflowWrap: 'anywhere'}}>
                     Dragon Spark</Typography>
                 <Typography variant="h3" align="center" color="white"
-                            sx={{px: 2, maxWidth: '5xl'}}>
+                            sx={{px: 2, maxWidth: 1100, fontSize: {xs: '1.35rem', sm: '2rem', md: '2.75rem'}}}>
                     CONNECTS XVIII ABC CHALLENGES TO CORPS AND DIVISION INNOVATION CELLS</Typography>
                 <Typography variant={'h3'}
                             sx={{
                                 mt: 2,
-                                mb: 5,
+                                mb: {xs: 3, md: 5},
                                 px: 2,
-                                maxWidth: '5xl',
+                                maxWidth: 1100,
                                 textShadow: `0px 0px 30px #5a93c4, 0px 0px 30px #5a93c4`,
                                 fontWeight: 'bold',
-                                letterSpacing: '8px'
+                                letterSpacing: 0,
+                                textAlign: 'center',
+                                fontSize: {xs: '1.1rem', sm: '1.75rem', md: '2.4rem'}
                             }} color={'white'}>JIOP | ODS | DIVISION INNOVATION</Typography>
 
                 <Stack
                     direction={'row'}
-                    spacing={8}
-
+                    spacing={{xs: 1, sm: 2, md: 4}}
+                    useFlexGap
+                    flexWrap="wrap"
+                    justifyContent="center"
+                    sx={{maxWidth: 1100, px: 1}}
                 >
                     {filterTag.current.map((tag) => (
                         <TagFilter
@@ -132,7 +141,8 @@ const InnovationsCells = () => {
                 <Button variant={'contained'}
                         onClick={handleClick}
                         sx={{
-                            width: '15rem',
+                            width: {xs: '100%', sm: '15rem'},
+                            maxWidth: '20rem',
                             height: '3rem',
                             mt: 5,
                             fontSize: '1.2rem'
@@ -146,12 +156,12 @@ const InnovationsCells = () => {
                             sx={{mb: 4, opacity: 0.7, fontWeight: 300}}>
                     Threat Informed | Strategically Driven | Operationally Focused | Tactically Prepared
                 </Typography>
-                <Grid container spacing={4} justifyContent="center">
+                <Grid container spacing={{xs: 2, md: 4}} justifyContent="center" sx={{width: '100%', mx: 0}}>
 
                     {selectedTags.length === filterTag.current.length ?
                         displayedCells.map((cell) => {
                             return (
-                                <Grid item key={cell.id}>
+                                <Grid item xs={12} sm={6} md={4} lg={3} key={cell.id} sx={{display: 'flex', justifyContent: 'center'}}>
                                     <InnovationCellCard {...cell} />
                                 </Grid>
                             );
@@ -162,7 +172,7 @@ const InnovationsCells = () => {
 
                                 if (hasMatchingTag) {
                                     return (
-                                        <Grid item key={cell.id}>
+                                        <Grid item xs={12} sm={6} md={4} lg={3} key={cell.id} sx={{display: 'flex', justifyContent: 'center'}}>
                                             <InnovationCellCard {...cell} />
                                         </Grid>
                                     );
@@ -183,12 +193,12 @@ const InnovationsCells = () => {
                         What is Dragon Spark?
                     </Typography>
                     <Typography
-                        width={'60%'}
                         align={'center'}
                         color={theme.palette.text.secondary}
                         variant={'h5'}
                         fontWeight={'lighter'}
                         lineHeight={1.5}
+                        sx={{width: {xs: '100%', md: '60%'}, fontSize: {xs: '1rem', sm: '1.25rem', md: '1.5rem'}}}
                     >
                         Dragon Spark is the XVIII Airborne Corps intake, triage, and routing system for Soldier-led
                         problems. It connects Corps headquarters, JIOP, ODS, and subordinate division innovation cells

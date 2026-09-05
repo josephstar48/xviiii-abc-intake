@@ -10,8 +10,9 @@ const ContactCard = styled(Box)(({ theme }) => ({
     padding: theme.spacing(2),
     color: 'white',
     backgroundColor: '#332F30',
-    width: '320px',
-    height: '183px',
+    width: '100%',
+    maxWidth: '320px',
+    minHeight: '183px',
 }));
 
 const IconWrapper = styled(Box)(({ theme }) => ({
@@ -35,7 +36,7 @@ const ContactCards = ({handleClick}: ContactCardsProps) => {
 
     return (
         <Grid container spacing={2} justifyContent="center" sx={{ pb: 8 }}>
-            <Grid item>
+            <Grid item xs={12} sm={6} md={4} sx={{display: 'flex', justifyContent: 'center'}}>
                 <ContactCard>
                     <IconWrapper>
                         <EmailIcon sx={{ fontSize: 60 }} />
@@ -63,7 +64,7 @@ const ContactCards = ({handleClick}: ContactCardsProps) => {
                     </Tooltip>
                 </ContactCard>
             </Grid>
-            <Grid item>
+            <Grid item xs={12} sm={6} md={4} sx={{display: 'flex', justifyContent: 'center'}}>
                 <ContactCard>
                     <IconWrapper>
                         <PhoneIcon sx={{ fontSize: 60 }} />
@@ -83,7 +84,7 @@ const ContactCards = ({handleClick}: ContactCardsProps) => {
                     </Typography>
                 </ContactCard>
             </Grid>
-            <Grid item>
+            <Grid item xs={12} sm={6} md={4} sx={{display: 'flex', justifyContent: 'center'}}>
                 <ContactCard>
                     <IconWrapper>
                         <PlaceIcon sx={{ fontSize: 60 }} />

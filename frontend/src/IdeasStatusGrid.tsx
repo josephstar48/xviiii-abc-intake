@@ -235,15 +235,16 @@ const IdeasStatusGrid: React.FC = () => {
   }
 
   return (
-    <Box sx={{ height: 600, width: '100%' }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} mt={3}>
-        <Typography variant="h4" component="h1" fontWeight="bold" color='white'>
+    <Box sx={{ width: '100%', pb: 4 }}>
+      <Box display="flex" justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} flexDirection={{xs: 'column', sm: 'row'}} gap={2} mb={2} mt={3}>
+        <Typography variant="h4" component="h1" fontWeight="bold" color='white' sx={{fontSize: {xs: '1.75rem', sm: '2.125rem'}}}>
           Dragon Spark Status
         </Typography>
         <Button
           variant="contained"
           color="primary"
           onClick={() => setOpenSubmissionModal(true)}
+          sx={{alignSelf: {xs: 'stretch', sm: 'center'}}}
         >
           Submit New Idea
         </Button>
@@ -258,31 +259,35 @@ const IdeasStatusGrid: React.FC = () => {
           </Grid>
         ))}
       </Grid>
-      <DataGrid
-        rows={ideas}
-        columns={columns}
-        loading={loading}
-        onRowClick={params => handleRowClick(params.id as number)}
-        sx={{
-          '& .MuiDataGrid-columnHeaders': {
-            backgroundColor: theme.palette.grey[900],
-            color: theme.palette.secondary.main,
-            fontWeight: 'bold',
-          },
-          '& .MuiDataGrid-cell:focus': {
-            outline: 'none',
-          },
-          '& .MuiDataGrid-sortIcon': {
-            color: '#C4E0E3'
-          },
-          '& .MuiSvgIcon-root': {
-            color: '#C4E0E3'
-          },
-          '& .MuiDataGrid-row:hover': {
-            backgroundColor: theme.palette.grey['900']
-          }
-        }}
-      />
+      <Box sx={{width: '100%', overflowX: 'auto'}}>
+        <Box sx={{height: {xs: 520, md: 600}, minWidth: {xs: 980, md: '100%'}}}>
+          <DataGrid
+            rows={ideas}
+            columns={columns}
+            loading={loading}
+            onRowClick={params => handleRowClick(params.id as number)}
+            sx={{
+              '& .MuiDataGrid-columnHeaders': {
+                backgroundColor: theme.palette.grey[900],
+                color: theme.palette.secondary.main,
+                fontWeight: 'bold',
+              },
+              '& .MuiDataGrid-cell:focus': {
+                outline: 'none',
+              },
+              '& .MuiDataGrid-sortIcon': {
+                color: '#C4E0E3'
+              },
+              '& .MuiSvgIcon-root': {
+                color: '#C4E0E3'
+              },
+              '& .MuiDataGrid-row:hover': {
+                backgroundColor: theme.palette.grey['900']
+              }
+            }}
+          />
+        </Box>
+      </Box>
       <IdeaSubmission
         open={openSubmissionModal}
         setOpen={setOpenSubmissionModal}

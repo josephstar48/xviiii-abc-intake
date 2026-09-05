@@ -32,10 +32,11 @@ const logoMap: { [key: string]: string } = {
 }
 
 const StyledCard = styled(Card)(() => ({
-    width: 360,
-    height: 300,
+    width: '100%',
+    maxWidth: 360,
+    minHeight: 300,
     color: 'white',
-    borderRadius: 16,
+    borderRadius: 8,
     border: '1px solid #353535',
     background: 'linear-gradient(to bottom, #000000, #1a1a1a)',
 }));
@@ -114,7 +115,7 @@ export const InnovationCellCard = ({
                             alt={`${name} insignia`}
                             sx={{width: 54, height: 60, marginRight: 1, objectFit: 'contain'}}
                         />
-                        <Typography variant="h5" sx={{lineHeight: 1.1}}>{name}</Typography>
+                        <Typography variant="h5" sx={{lineHeight: 1.1, fontSize: {xs: '1.15rem', sm: '1.35rem', md: '1.5rem'}}}>{name}</Typography>
                     </Box>
                     <Box display="flex" flexWrap="wrap" mb={2}>
                         {tags.map((tag) => (
@@ -144,7 +145,7 @@ export const InnovationCellCard = ({
 
             <GenericModal open={moduleIsOpen} setOpen={setModuleIsOpen}>
                 <div>
-                    <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                    <Box display="flex" alignItems={{xs: 'flex-start', sm: 'center'}} justifyContent="space-between" flexDirection={{xs: 'column', sm: 'row'}} gap={2} mb={1}>
                         <Box display="flex" alignItems="center">
                             <CardMedia
                                 component="img"
@@ -157,8 +158,8 @@ export const InnovationCellCard = ({
                         <Box
                             display="flex"
                             flexWrap="wrap"
-                            justifyContent="flex-end"
-                            maxWidth="60%"
+                            justifyContent={{xs: 'flex-start', sm: 'flex-end'}}
+                            maxWidth={{xs: '100%', sm: '60%'}}
                         >
                             {tags.map((tag) => (
                                 <TagChip
@@ -169,19 +170,18 @@ export const InnovationCellCard = ({
                             ))}
                         </Box>
                     </Box>
-                    <Box display="flex" alignItems="center" mb={2}>
+                    <Box display="flex" alignItems="flex-start" mb={2}>
                         <LocationOnOutlinedIcon
                             sx={{
                                 color: theme.palette.text.secondary
                             }}
                         />
                         <Typography
-                            marginTop={2}
-                            sx={{
-                                whiteSpace: 'pre-wrap',
-                                wordWrap: 'break-word',
-                                maxWidth: '200px' // Adjusted the max width to wrap sooner
-                            }}
+                                sx={{
+                                    whiteSpace: 'pre-wrap',
+                                    wordWrap: 'break-word',
+                                    maxWidth: '100%'
+                                }}
                         >
                             {address}
                         </Typography>
@@ -194,13 +194,14 @@ export const InnovationCellCard = ({
                         <DialogContentText color={blackColor}>{description}</DialogContentText>
                     </DialogContent>
                 </div>
-                <DialogActions>
+                <DialogActions sx={{flexDirection: {xs: 'column', sm: 'row'}, alignItems: 'stretch', gap: 1, px: 0}}>
                     <Button
                         variant="contained"
                         onClick={() => setModuleIsOpen(false)}
                         sx={{
                             color: theme.palette.warning.main,
-                            backgroundColor: theme.palette.info.main
+                            backgroundColor: theme.palette.info.main,
+                            m: 0,
                         }}
                     >
                         RETURN TO DRAGON SPARK
@@ -209,7 +210,8 @@ export const InnovationCellCard = ({
                         variant="contained"
                         onClick={handleSubmitClick}
                         sx={{
-                            backgroundColor: theme.palette.warning.main
+                            backgroundColor: theme.palette.warning.main,
+                            m: 0,
                         }}
                     >
                         SUBMIT DIRECT

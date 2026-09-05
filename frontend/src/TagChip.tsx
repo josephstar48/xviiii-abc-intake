@@ -66,7 +66,8 @@ export const TagFilter = ({chipName, onClick, selectedTags}: TagFilterProp) => {
             justifyContent="center"
             onClick={onClick}
             sx={{
-                width: '100%',
+                width: {xs: 96, sm: 120, md: 132},
+                flex: '0 0 auto',
                 cursor: 'pointer',
                 verticalAlign: 'bottom'
             }}
@@ -100,6 +101,9 @@ export const TagFilter = ({chipName, onClick, selectedTags}: TagFilterProp) => {
                     color: selectedTagNames.includes(chipName) ? grey[500] : '#FFF',
                     fontWeight: 'bold',
                     textAlign: 'center'
+                    ,
+                    fontSize: {xs: '0.9rem', sm: '1rem', md: '1.25rem'},
+                    overflowWrap: 'anywhere'
                 }}
             >
                 {chipName}

@@ -19,7 +19,7 @@ const LandingPage = () => {
   });
 
   const Description = () => (
-    <Typography variant="h5" color="white" paragraph sx={{ maxWidth: '600px' }}>
+    <Typography variant="h5" color="white" paragraph sx={{ maxWidth: '600px', fontSize: {xs: '1rem', sm: '1.15rem', md: '1.35rem'} }}>
       <DragonSparkEmphasis>Dragon Spark</DragonSparkEmphasis> is the XVIII Airborne Corps innovation intake and routing portal.
       It connects Soldiers, units, JIOP, ODS, and division innovation cells so operational problems move quickly from idea
       to prototype, testing, and delivered impact.
@@ -32,34 +32,36 @@ const LandingPage = () => {
       backgroundRepeat: "no-repeat",
       backgroundSize: "min(70vw, 760px)",
       backgroundPosition: "center",
-      backgroundAttachment: 'fixed',
-      height: '100vh',
-      width: '100vw',
+      backgroundAttachment: {xs: 'scroll', md: 'fixed'},
+      minHeight: '100%',
+      width: '100%',
       display: 'flex',
+      overflowX: 'hidden',
+      py: {xs: 3, md: 0},
     }}>
-      <Container  sx={{ width: '95%', marginTop: 8 }}>
-        <Stack direction="row" justifyContent="space-between" >
+      <Container  sx={{ width: '100%', mt: {xs: 2, md: 8}, px: {xs: 2, sm: 3} }}>
+        <Stack direction={{xs: 'column', md: 'row'}} justifyContent="space-between" spacing={{xs: 4, md: 6}}>
           {/* Left side content */}
-          <Box sx={{ width: '45%'}} mr={30}>
-            <Typography variant="h2" color="white" gutterBottom fontWeight="bold" sx={{ fontSize: '3.5rem' }}>
+          <Box sx={{ width: {xs: '100%', md: '45%'}}}>
+            <Typography variant="h2" color="white" gutterBottom fontWeight="bold" sx={{ fontSize: {xs: '2.35rem', sm: '3rem', md: '3.5rem'} }}>
               Dragon Spark
             </Typography>
-            <Typography variant="h5" color="white" gutterBottom fontWeight="bold">
+            <Typography variant="h5" color="white" gutterBottom fontWeight="bold" sx={{fontSize: {xs: '1.15rem', sm: '1.35rem', md: '1.5rem'}}}>
               XVIII Airborne Corps Innovation Hub
             </Typography>
             <Description />
           </Box>
           {/* Right side content */}
-          <Box sx={{ width: '45%'}}>
+          <Box sx={{ width: {xs: '100%', md: '45%'}}}>
             <Box
               sx={{
-                height: '300px',
+                height: {xs: 'min(42vh, 320px)', md: '300px'},
                 width: '100%',
                 overflow: 'auto',
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 textAlign: 'left',
                 marginBottom: 2,
-                padding: 3,
+                padding: {xs: 2, sm: 3},
                 borderRadius: '8px',
               }}
             >
@@ -86,7 +88,7 @@ const LandingPage = () => {
                 are private and confidential. See User Agreement for details.
               </Typography>
             </Box>
-            <Stack direction="row" alignItems="center" spacing={2}>
+            <Stack direction={{xs: 'column', sm: 'row'}} alignItems={{xs: 'stretch', sm: 'center'}} spacing={2}>
               <Typography variant="caption" sx={{ color: 'white', flex: 1, fontSize: '0.9rem' }}>
                 By clicking, you <b>accept</b> the terms and conditions above
               </Typography>

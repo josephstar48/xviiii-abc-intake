@@ -320,13 +320,13 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
                     <Button variant={'contained'} color={'warning'} onClick={submitData}>Submit</Button>
                     <Button color='info' variant='contained' onClick={handleCancel} sx={{ml: 2}}>Cancel</Button>
                 </>
-                : <Stack direction='row' alignItems='center'>
+                : <Stack direction={{xs: 'column', sm: 'row'}} alignItems={{xs: 'stretch', sm: 'center'}} spacing={1}>
                     <LoadingButton variant='contained' color={'warning'} loading={loading}
                                    loadingPosition='start'
                                    startIcon={<AutoAwesome/>} onClick={() => fetchData()}
-                                   sx={{"&:disabled": {color: theme.palette.secondary.main}}}>Continue</LoadingButton>
-                    <Button color='info' variant='contained' onClick={handleCancel} sx={{ml: 2}}>Cancel</Button>
-                    {loading && <><Typography ml={2} sx={{transform: 'translateY(7px)'}}>Powered by</Typography><GeminiLogo height={30} width={100}/></>}
+                                    sx={{"&:disabled": {color: theme.palette.secondary.main}}}>Continue</LoadingButton>
+                    <Button color='info' variant='contained' onClick={handleCancel}>Cancel</Button>
+                    {loading && <Stack direction="row" alignItems="center" justifyContent={{xs: 'center', sm: 'flex-start'}} spacing={1}><Typography>Powered by</Typography><GeminiLogo height={30} width={100}/></Stack>}
                 </Stack>
             }
 
