@@ -42,6 +42,7 @@ export const Header = () => {
     const menuItems = [
         { text: 'INNOVATION CELLS', href: '/innovation-cells' },
         { text: 'SUBMISSION STATUS', href: '/status' },
+        { text: 'CAPABILITY CATALOG', href: '/catalog' },
         { text: 'CORPS ADMIN', href: '/admin' },
     ];
 

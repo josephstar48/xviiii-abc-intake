@@ -1,6 +1,7 @@
-import React, {Dispatch, SetStateAction, useEffect, useState} from 'react';
+import React, {Dispatch, SetStateAction, useEffect, useMemo, useState} from 'react';
 import {
     Alert,
+    Box,
     Button,
     FormLabel,
     Grid,
@@ -21,6 +22,9 @@ import {GenericModal} from "./GenericModal";
 import {getTags, Tags} from "./api/tagsApi";
 import {useNavigate} from "react-router-dom";
 import {ReactComponent as GeminiLogo} from "./assets/gemini.svg";
+import {getIdeas, Idea} from "./api/ideasApi";
+import {StageChip} from "./StageChip";
+import {Stage} from "./enum/Stage";
 
 export type IdeaSubmissionProps = {
     open: boolean,
@@ -96,6 +100,7 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
     const [completedGen, setCompletedGen] = useState(false);
     const [tabValue, setTabValue] = useState(0);
     const [availableTags, setAvailableTags] = useState<Tags[]>([]);
+    const [existingIdeas, setExistingIdeas] = useState<Idea[]>([]);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const inputFieldStyle = {
@@ -126,7 +131,11 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
     const [form, setForm] = useState(defaultFormData);
 
     useEffect(() => {
-        getTags().then(tags => setAvailableTags(tags));
+        Promise.all([getTags(), getIdeas()])
+            .then(([tags, ideas]) => {
+                setAvailableTags(tags);
+                setExistingIdeas(ideas);
+            });
     }, []);
 
     const requiredFields: { key: keyof typeof defaultFormData, label: string }[] = [
@@ -298,6 +307,40 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
         setTabValue(newValue);
     }
 
+    const similarIdeas = useMemo(() => {
+        const searchTerms = [
+            ...form.title.split(/\s+/),
+            ...form.problemStatement.split(/\s+/),
+            form.problemType,
+            form.capabilityLane
+        ]
+            .map(term => term.toLowerCase().trim())
+            .filter(term => term.length > 3);
+
+        if (searchTerms.length === 0) {
+            return [];
+        }
+
+        return existingIdeas
+            .map((idea) => {
+                const ideaText = [
+                    idea.title,
+                    idea.problemStatement,
+                    idea.problemContext,
+                    idea.solutionConcepts,
+                    idea.problemType,
+                    idea.capabilityLane
+                ].join(' ').toLowerCase();
+
+                const score = searchTerms.reduce((total, term) => total + (ideaText.includes(term) ? 1 : 0), 0);
+                return {idea, score};
+            })
+            .filter(({score}) => score >= 2)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3)
+            .map(({idea}) => idea);
+    }, [existingIdeas, form.capabilityLane, form.problemStatement, form.problemType, form.title]);
+
     const renderSelect = (label: string, key: keyof typeof defaultFormData, options: string[]) => (
         <>
             <FormLabel sx={{color: theme.palette.common.black}}>{label}</FormLabel>
@@ -340,6 +383,33 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
             />
         </>
     );
+
+    const renderSimilarIdeas = () => {
+        if (similarIdeas.length === 0) {
+            return null;
+        }
+
+        return (
+            <Alert severity="info" sx={{mb: 2}}>
+                <Typography variant="subtitle2" fontWeight="bold" mb={1}>
+                    Possible existing digital efforts
+                </Typography>
+                <Stack spacing={1}>
+                    {similarIdeas.map((idea) => (
+                        <Box key={idea.id}>
+                            <Stack direction={{xs: 'column', sm: 'row'}} alignItems={{xs: 'flex-start', sm: 'center'}} spacing={1}>
+                                <Typography variant="body2" fontWeight="bold">{idea.title}</Typography>
+                                <StageChip stage={Stage[idea.stage] || idea.stage} size="small"/>
+                            </Stack>
+                            <Typography variant="caption" display="block">
+                                {idea.unitDivision || 'Unspecified org'} | {idea.capabilityLane || 'Unspecified lane'} | {idea.innovationCell?.name || 'Not assigned'}
+                            </Typography>
+                        </Box>
+                    ))}
+                </Stack>
+            </Alert>
+        );
+    };
 
     if (successMessage) {
         return (
@@ -400,6 +470,7 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
                             </Select>
                         </Grid>
                     </Grid>
+                    {renderSimilarIdeas()}
                     {renderTextField('Title', 'title', true)}
                     {renderTextField('Problem Statement', 'problemStatement', true)}
                     {renderTextField('Problem Context', 'problemContext', true)}

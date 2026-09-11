@@ -9,6 +9,7 @@ import InnovationsCells from "./InnovationsCells";
 import LandingPage from "./LandingPage";
 import {GlobalProvider} from "./context/GlobalProvider";
 import AdminDashboard from "./AdminDashboard";
+import DigitalCapabilityCatalog from "./DigitalCapabilityCatalog";
 
 const AppContent = () => {
   const location = useLocation();
@@ -23,6 +24,7 @@ const AppContent = () => {
           <Route path={'/innovationCell'} element={<InnovationsCells />} />
           <Route path={'/innovationcell'} element={<InnovationsCells />} />
           <Route path={'/status'} element={<IdeasStatusGrid />} />
+          <Route path={'/catalog'} element={<DigitalCapabilityCatalog />} />
           <Route path={'/admin'} element={<AdminDashboard />} />
           <Route path={'/errorPage'} element={<ErrorPage />} />
           <Route path={'*'} element={<ErrorPage />} />
