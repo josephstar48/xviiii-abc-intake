@@ -52,8 +52,10 @@ export const Header = () => {
     };
 
     return (
-        <AppBar position="static" sx={{
-            backgroundColor: theme.palette.grey['900']
+        <AppBar position="fixed" sx={{
+            backgroundColor: theme.palette.grey['900'],
+            top: 0,
+            zIndex: theme.zIndex.drawer + 1,
         }}>
             <Toolbar
                 sx={{
@@ -68,19 +70,31 @@ export const Header = () => {
                     width="100%"
                     gap={1}
                 >
-                    <StyledImage
-                        src="/favicon_dragonSpark.png"
-                        alt="Dragon Spark logo"
-                        sx={{height: {xs: 44, sm: 60}, marginRight: {xs: 1, sm: 2}}}
-                    />
-                    <Typography
-                        variant="h5"
-                        fontWeight="bold"
-                        color="white"
-                        sx={{fontSize: {xs: '1.15rem', sm: '1.5rem'}, whiteSpace: 'nowrap'}}
+                    <Button
+                        color="inherit"
+                        onClick={() => handleNavigate('/innovation-cells')}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            textTransform: 'none',
+                            p: 0,
+                            minWidth: 0,
+                        }}
                     >
-                        Dragon Spark
-                    </Typography>
+                        <StyledImage
+                            src="/favicon_dragonSpark.png"
+                            alt="Dragon Spark logo"
+                            sx={{height: {xs: 44, sm: 60}, marginRight: {xs: 1, sm: 2}}}
+                        />
+                        <Typography
+                            variant="h5"
+                            fontWeight="bold"
+                            color="white"
+                            sx={{fontSize: {xs: '1.15rem', sm: '1.5rem'}, whiteSpace: 'nowrap'}}
+                        >
+                            Dragon Spark
+                        </Typography>
+                    </Button>
                     <Box display={{xs: 'none', md: 'flex'}} flexGrow={1} justifyContent="center">
                         <Box>
                             {menuItems.map((item) => (

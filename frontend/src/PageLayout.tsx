@@ -19,6 +19,8 @@ export const PageLayout = (props: PageLayoutProps) => {
     const {children, footer,  limitContentWidth, currentPath} = props;
 
     const {isPageHasBackgroundImage} = useGlobalContext();
+    const usesFixedHeader = currentPath !== '/';
+
   const renderHeader = () => {
     switch (currentPath) {
       case '/':
@@ -49,6 +51,7 @@ export const PageLayout = (props: PageLayoutProps) => {
                     maxHeight: '100%',
                     overflowY: 'auto',
                     overflowX: 'hidden',
+                    pt: usesFixedHeader ? {xs: '72px', sm: '88px'} : 0,
                 }}
             >
                 {limitContentWidth && !isPageHasBackgroundImage ? <Box
