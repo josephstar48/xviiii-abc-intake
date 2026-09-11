@@ -1,5 +1,6 @@
 import React, {Dispatch, SetStateAction, useEffect, useState} from 'react';
 import {
+    Alert,
     Button,
     FormLabel,
     Grid,
@@ -14,7 +15,7 @@ import {
     useTheme
 } from "@mui/material";
 import {LoadingButton} from "@mui/lab";
-import {AutoAwesome, Filter1, Filter2} from "@mui/icons-material";
+import {AutoAwesome, Edit, Filter1, Filter2} from "@mui/icons-material";
 import axios from "axios";
 import {GenericModal} from "./GenericModal";
 import {getTags, Tags} from "./api/tagsApi";
@@ -88,10 +89,14 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
 
     const [prompt, setPrompt] = useState('');
     const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [aiError, setAiError] = useState('');
+    const [submitError, setSubmitError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [completedGen, setCompletedGen] = useState(false);
     const [tabValue, setTabValue] = useState(0);
     const [availableTags, setAvailableTags] = useState<Tags[]>([]);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const inputFieldStyle = {
         "&:hover fieldset": {
@@ -124,9 +129,66 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
         getTags().then(tags => setAvailableTags(tags));
     }, []);
 
+    const requiredFields: { key: keyof typeof defaultFormData, label: string }[] = [
+        {key: 'firstName', label: 'First name'},
+        {key: 'lastName', label: 'Last name'},
+        {key: 'unit', label: 'Unit'},
+        {key: 'email', label: 'Email'},
+        {key: 'phone', label: 'Phone'},
+        {key: 'unitDivision', label: 'Unit / division'},
+        {key: 'problemType', label: 'Problem type'},
+        {key: 'operationalImpact', label: 'Operational impact'},
+        {key: 'urgency', label: 'Urgency'},
+        {key: 'capabilityLane', label: 'Capability lane'},
+        {key: 'title', label: 'Title'},
+        {key: 'problemStatement', label: 'Problem statement'},
+        {key: 'problemContext', label: 'Problem context'},
+        {key: 'solutionBenefits', label: 'Solution benefits'},
+        {key: 'solutionConcepts', label: 'Solution concepts'}
+    ];
+
+    const validateForm = () => {
+        const nextErrors = requiredFields.reduce<Record<string, string>>((errors, field) => {
+            if (!form[field.key].toString().trim()) {
+                errors[field.key] = `${field.label} is required.`;
+            }
+
+            return errors;
+        }, {});
+
+        if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+            nextErrors.email = 'Enter a valid email address.';
+        }
+
+        setFieldErrors(nextErrors);
+        return nextErrors;
+    };
+
+    const validatePrompt = () => {
+        if (prompt.trim()) {
+            setAiError('');
+            return true;
+        }
+
+        setAiError('Add a quick description first, or choose Write it myself to skip AI.');
+        return false;
+    };
+
+    const startManualEntry = () => {
+        setAiError('');
+        setSubmitError('');
+        setCompletedGen(true);
+        setTabValue(1);
+    };
+
     const fetchData = async () => {
+        if (!validatePrompt()) {
+            return;
+        }
+
         setLoading(true);
         setAiError('');
+        setSubmitError('');
         try {
             const {data} = await axios.post('/api/ai/structure-idea', {prompt});
 
@@ -143,7 +205,7 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
             setTabValue(1);
         } catch (error) {
             console.error("Error generating Dragon Spark draft:", error);
-            setAiError('AI drafting is unavailable. Check the Gemini API key on the backend.');
+            setAiError('AI drafting is unavailable right now. You can still choose Write it myself and submit the problem manually.');
         } finally {
             setLoading(false);
         }
@@ -151,9 +213,28 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
 
     const setFormValue = (key: string, value: string | number[]) => {
         setForm(prev => ({...prev, [key]: value}))
+        setFieldErrors(prev => {
+            if (!prev[key]) {
+                return prev;
+            }
+
+            const {[key]: removedError, ...remainingErrors} = prev;
+            return remainingErrors;
+        });
     }
 
     const submitData = async () => {
+        const nextErrors = validateForm();
+
+        if (Object.keys(nextErrors).length > 0) {
+            setSubmitError('Please complete the required fields highlighted below.');
+            setTabValue(Object.keys(nextErrors).some(key => ['firstName', 'lastName', 'unit', 'email', 'phone'].includes(key)) ? 0 : 1);
+            return;
+        }
+
+        setSubmitting(true);
+        setSubmitError('');
+
         const idea = {
             title: form.title,
             problemStatement: form.problemStatement,
@@ -177,7 +258,33 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
             innovationCell: innovationCellId ? {id: Number(innovationCellId)} : null,
         }
 
-        await axios.post('/api/ideas', idea);
+        try {
+            await axios.post('/api/ideas', idea);
+            setSuccessMessage('Problem submitted. Dragon Spark has it in the intake queue for routing and triage.');
+            loadIdeas();
+        } catch (error) {
+            console.error("Error submitting Dragon Spark idea:", error);
+            setSubmitError('Submission failed. Please check the highlighted fields and try again.');
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    const handleCancel = () => {
+        setTabValue(0);
+        setPrompt('');
+        setAiError('');
+        setSubmitError('');
+        setSuccessMessage('');
+        setCompletedGen(false);
+        setLoading(false);
+        setSubmitting(false);
+        setFieldErrors({});
+        setOpen(false);
+        setForm(defaultFormData);
+    }
+
+    const handleDone = () => {
         handleCancel();
         if (setModuleIsOpen) {
             setModuleIsOpen(false);
@@ -185,17 +292,6 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
         if (props.isOnDifferentPage) {
             navigate('/status')
         }
-        loadIdeas();
-    }
-
-    const handleCancel = () => {
-        setTabValue(0);
-        setPrompt('');
-        setAiError('');
-        setCompletedGen(false);
-        setLoading(false);
-        setOpen(false);
-        setForm(defaultFormData);
     }
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -208,6 +304,7 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
             <Select
                 value={form[key]}
                 onChange={(e: SelectChangeEvent<string>) => setFormValue(key, e.target.value)}
+                error={Boolean(fieldErrors[key])}
                 size="small"
                 sx={{...inputFieldStyle, mb: 2, width: '100%'}}
             >
@@ -217,8 +314,47 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
                     </MenuItem>
                 ))}
             </Select>
+            {fieldErrors[key] && <Typography color="error" variant="caption" display="block" mt={-1.5} mb={1.5}>{fieldErrors[key]}</Typography>}
         </>
     );
+
+    const renderTextField = (
+        label: string,
+        key: keyof typeof defaultFormData,
+        multiline = false,
+        size: 'small' | 'medium' = 'medium'
+    ) => (
+        <>
+            <FormLabel sx={{color: theme.palette.common.black}}>{label}</FormLabel>
+            <TextField
+                size={size}
+                variant='outlined'
+                fullWidth
+                multiline={multiline}
+                minRows={multiline ? 3 : undefined}
+                value={form[key]}
+                error={Boolean(fieldErrors[key])}
+                helperText={fieldErrors[key]}
+                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue(key, e.target.value)}
+                sx={{...inputFieldStyle, mb: 2}}
+            />
+        </>
+    );
+
+    if (successMessage) {
+        return (
+            <GenericModal open={open} setOpen={setOpen}>
+                <Typography variant='h4' pb={1}>Submission received</Typography>
+                <Alert severity="success" sx={{mb: 2}}>
+                    {successMessage}
+                </Alert>
+                <Typography variant='body2' pb={2} color={theme.palette.text.disabled}>
+                    Your problem is ready for routing, status tracking, and admin triage.
+                </Typography>
+                <Button variant={'contained'} color={'warning'} onClick={handleDone}>Done</Button>
+            </GenericModal>
+        )
+    }
 
     return (
         <GenericModal open={open} setOpen={setOpen}>
@@ -236,6 +372,7 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
                 <Tab value={0} label={<Filter1/>} sx={{width: '50%'}}/>
                 <Tab value={1} label={<Filter2/>} sx={{width: '50%'}} disabled={!completedGen}/>
             </Tabs>
+            {submitError && <Alert severity="error" sx={{mb: 2}}>{submitError}</Alert>}
             {(tabValue === 1)
                 ? <>
                     <Grid container spacing={2}>
@@ -263,68 +400,41 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
                             </Select>
                         </Grid>
                     </Grid>
-                    <FormLabel sx={{color: theme.palette.common.black}}>Title</FormLabel>
-                    <TextField variant='outlined' fullWidth multiline value={form.title}
-                               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue('title', e.target.value)}
-                               sx={{...inputFieldStyle, mb: 2}}/>
-                    <FormLabel sx={{color: theme.palette.common.black}}>Problem Statement</FormLabel>
-                    <TextField variant='outlined' fullWidth multiline value={form.problemStatement}
-                               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue('problemStatement', e.target.value)}
-                               sx={{...inputFieldStyle, mb: 2}}/>
-                    <FormLabel sx={{color: theme.palette.common.black}}>Problem Context</FormLabel>
-                    <TextField variant='outlined' fullWidth multiline value={form.problemContext}
-                               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue('problemContext', e.target.value)}
-                               sx={{...inputFieldStyle, mb: 2}}/>
-                    <FormLabel sx={{color: theme.palette.common.black}}>Solution Benefits</FormLabel>
-                    <TextField variant='outlined' fullWidth multiline value={form.solutionBenefits}
-                               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue('solutionBenefits', e.target.value)}
-                               sx={{...inputFieldStyle, mb: 2}}/>
-                    <FormLabel sx={{color: theme.palette.common.black}}>Solution Concepts</FormLabel>
-                    <TextField variant='outlined' fullWidth multiline value={form.solutionConcepts}
-                               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue('solutionConcepts', e.target.value)}
-                               sx={{...inputFieldStyle, mb: 2}}/>
+                    {renderTextField('Title', 'title', true)}
+                    {renderTextField('Problem Statement', 'problemStatement', true)}
+                    {renderTextField('Problem Context', 'problemContext', true)}
+                    {renderTextField('Solution Benefits', 'solutionBenefits', true)}
+                    {renderTextField('Solution Concepts', 'solutionConcepts', true)}
                 </>
                 : <>
-                    <FormLabel sx={{color: theme.palette.common.black}}>First Name</FormLabel>
-                    <TextField size='small' variant='outlined' fullWidth value={form.firstName}
-                               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue('firstName', e.target.value)}
-                               sx={{...inputFieldStyle, mb: 2}}/>
-                    <FormLabel sx={{color: theme.palette.common.black}}>Last Name</FormLabel>
-                    <TextField size='small' variant='outlined' fullWidth value={form.lastName}
-                               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue('lastName', e.target.value)}
-                               sx={{...inputFieldStyle, mb: 2}}/>
-                    <FormLabel sx={{color: theme.palette.common.black}}>Unit</FormLabel>
-                    <TextField size='small' variant='outlined' fullWidth value={form.unit}
-                               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue('unit', e.target.value)}
-                               sx={{...inputFieldStyle, mb: 2}}/>
-                    <FormLabel sx={{color: theme.palette.common.black}}>Email</FormLabel>
-                    <TextField size='small' variant='outlined' fullWidth value={form.email}
-                               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue('email', e.target.value)}
-                               sx={{...inputFieldStyle, mb: 2}}/>
-                    <FormLabel sx={{color: theme.palette.common.black}}>Phone</FormLabel>
-                    <TextField size='small' variant='outlined' fullWidth value={form.phone}
-                               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormValue('phone', e.target.value)}
-                               sx={{...inputFieldStyle, mb: 2}}/>
-                    <FormLabel sx={{color: theme.palette.common.black}}>Enter your Problem and/or Proposed Solution</FormLabel>
+                    {renderTextField('First Name', 'firstName', false, 'small')}
+                    {renderTextField('Last Name', 'lastName', false, 'small')}
+                    {renderTextField('Unit', 'unit', false, 'small')}
+                    {renderTextField('Email', 'email', false, 'small')}
+                    {renderTextField('Phone', 'phone', false, 'small')}
+                    <FormLabel sx={{color: theme.palette.common.black}}>Quick Problem Description</FormLabel>
                     <TextField variant='outlined' fullWidth multiline
+                               minRows={4}
                                value={prompt}
                                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setPrompt(e.target.value)}
+                               helperText="Optional unless you want AI to structure the idea."
                                sx={{...inputFieldStyle, mb: 2}}
                     />
-                    {aiError && <Typography color="error" mb={2}>{aiError}</Typography>}
+                    {aiError && <Alert severity="error" sx={{mb: 2}}>{aiError}</Alert>}
                 </>
             }
 
             {(completedGen)
                 ? <>
-                    <Button variant={'contained'} color={'warning'} onClick={submitData}>Submit</Button>
+                    <LoadingButton variant={'contained'} color={'warning'} loading={submitting} onClick={submitData}>Submit</LoadingButton>
                     <Button color='info' variant='contained' onClick={handleCancel} sx={{ml: 2}}>Cancel</Button>
                 </>
                 : <Stack direction={{xs: 'column', sm: 'row'}} alignItems={{xs: 'stretch', sm: 'center'}} spacing={1}>
                     <LoadingButton variant='contained' color={'warning'} loading={loading}
                                    loadingPosition='start'
                                    startIcon={<AutoAwesome/>} onClick={() => fetchData()}
-                                    sx={{"&:disabled": {color: theme.palette.secondary.main}}}>Continue</LoadingButton>
+                                    sx={{"&:disabled": {color: theme.palette.secondary.main}}}>Use AI to structure my idea</LoadingButton>
+                    <Button color='info' variant='contained' startIcon={<Edit/>} onClick={startManualEntry}>Write it myself</Button>
                     <Button color='info' variant='contained' onClick={handleCancel}>Cancel</Button>
                     {loading && <Stack direction="row" alignItems="center" justifyContent={{xs: 'center', sm: 'flex-start'}} spacing={1}><Typography>Powered by</Typography><GeminiLogo height={30} width={100}/></Stack>}
                 </Stack>

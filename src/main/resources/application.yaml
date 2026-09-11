@@ -3,7 +3,7 @@ logging:
     dateformat: yyyy-MM-dd HH:mm:ss.SSS, UTC
 
 server:
-  port: 8080
+  port: ${PORT:8080}
   shutdown: graceful
 
 spring:
@@ -12,13 +12,13 @@ spring:
   application:
     name: dragon-spark
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5434}/${POSTGRES_DB:starter_dev}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5434}/${POSTGRES_DB:starter_dev}?sslmode=${POSTGRES_SSL_MODE:disable}
     username: ${POSTGRES_USERNAME:starter}
     password: ${POSTGRES_PASSWORD:starter}
     driver-class-name: org.postgresql.Driver
 
 file:
-  upload-dir: /Users/a2313895/Desktop/usasoc-hackathon/documents
+  upload-dir: ${FILE_UPLOAD_DIR:/tmp/dragon-spark-documents}
 
 gemini:
   api-key: ${GEMINI_API_KEY:}

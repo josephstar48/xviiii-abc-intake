@@ -15,7 +15,7 @@ You will need Java 17 and node version 20
 
 ### Start local services
 
-Run `docker-compose up -d` to start Postgres container
+Run `docker-compose up -d` to start the Postgres container.
 
 ### Configure Gemini AI
 
@@ -39,16 +39,18 @@ Do not paste the key into source code or commit it to git.
 
 `./gradlew bootRun`
 
-The app will be running locally at [https://localhost:8080](https://localhost:8080)
+The backend will be running locally at [http://localhost:8080](http://localhost:8080).
 
 ### Start frontend development server
 
-**Note**: Enables hot module reload (HMR) on [https://localhost:3000](https://localhost:3000)
+**Note**: Enables hot module reload (HMR) on [http://localhost:3000](http://localhost:3000).
 
 ```shell
 cd frontend
 yarn start
 ```
+
+For local development, use `http://` rather than `https://` unless you have configured TLS separately.
 
 ## Proposed UML Diagram
 
