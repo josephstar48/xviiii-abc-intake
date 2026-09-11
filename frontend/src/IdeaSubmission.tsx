@@ -24,6 +24,7 @@ import {ReactComponent as GeminiLogo} from "./assets/gemini.svg";
 import {getIdeas, Idea} from "./api/ideasApi";
 import {StageChip} from "./StageChip";
 import {Stage} from "./enum/Stage";
+import {formatLastUpdated, getStageLabel} from "./workflowUtils";
 
 export type IdeaSubmissionProps = {
     open: boolean,
@@ -100,6 +101,7 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
     const [aiError, setAiError] = useState('');
     const [submitError, setSubmitError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [submittedIdea, setSubmittedIdea] = useState<Idea | null>(null);
     const [completedGen, setCompletedGen] = useState(false);
     const [tabValue, setTabValue] = useState(0);
     const [existingIdeas, setExistingIdeas] = useState<Idea[]>([]);
@@ -135,6 +137,9 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
         getIdeas()
             .then((ideas) => {
                 setExistingIdeas(ideas);
+            })
+            .catch((error) => {
+                console.warn("Unable to load existing ideas for duplicate check:", error);
             });
     }, []);
 
@@ -268,7 +273,8 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
         }
 
         try {
-            await axios.post('/api/ideas', idea);
+            const {data} = await axios.post<Idea>('/api/ideas', idea);
+            setSubmittedIdea(data);
             setSuccessMessage('Problem submitted. Dragon Spark has it in the intake queue for routing and triage.');
             loadIdeas();
         } catch (error) {
@@ -285,6 +291,7 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
         setAiError('');
         setSubmitError('');
         setSuccessMessage('');
+        setSubmittedIdea(null);
         setCompletedGen(false);
         setLoading(false);
         setSubmitting(false);
@@ -411,24 +418,47 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
         );
     };
 
+    const stageLabel = submittedIdea ? getStageLabel(submittedIdea.stage) : 'Submitted';
+    const assignedCell = submittedIdea?.innovationCell;
+
     if (successMessage) {
         return (
             <GenericModal open={open} setOpen={setOpen}>
-                <Typography variant='h4' pb={1}>Submission received</Typography>
+                <Typography variant='h4' pb={1} sx={{fontSize: {xs: '1.75rem', sm: '2.125rem'}}}>Submission received</Typography>
                 <Alert severity="success" sx={{mb: 2}}>
-                    {successMessage}
+                    Your problem was submitted.
                 </Alert>
-                <Typography variant='body2' pb={2} color={theme.palette.text.disabled}>
-                    Your problem is ready for routing, status tracking, and admin triage.
-                </Typography>
-                <Button variant={'contained'} color={'warning'} onClick={handleDone}>Done</Button>
+                <Grid container spacing={1.5} mb={2}>
+                    <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" color={theme.palette.text.disabled}>Assigned to</Typography>
+                        <Typography variant="body1" fontWeight="bold">
+                            {assignedCell?.name || 'Pending Corps staff triage'}
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" color={theme.palette.text.disabled}>Current stage</Typography>
+                        <Typography variant="body1" fontWeight="bold">{stageLabel}</Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" color={theme.palette.text.disabled}>POC</Typography>
+                        <Typography variant="body1" fontWeight="bold">
+                            {assignedCell?.email || 'Corps admin will assign a POC'}
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" color={theme.palette.text.disabled}>Last updated</Typography>
+                        <Typography variant="body1" fontWeight="bold">{formatLastUpdated(submittedIdea?.lastUpdated)}</Typography>
+                    </Grid>
+                </Grid>
+                {submittedIdea?.routingNotes && <Alert severity="info" sx={{mb: 2}}>{submittedIdea.routingNotes}</Alert>}
+                <Button variant={'contained'} color={'warning'} onClick={handleDone} fullWidth>Done</Button>
             </GenericModal>
         )
     }
 
     return (
         <GenericModal open={open} setOpen={setOpen}>
-            <Typography variant='h4' pb={1}>Submit to Dragon Spark</Typography>
+            <Typography variant='h4' pb={1} sx={{fontSize: {xs: '1.75rem', sm: '2.125rem'}}}>Submit to Dragon Spark</Typography>
             <Typography variant='body2' pb={2} color={theme.palette.text.disabled}>
                 Route an XVIII ABC problem to JIOP, ODS, or the right division innovation cell.
             </Typography>
@@ -478,10 +508,10 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
             }
 
             {(completedGen)
-                ? <>
+                ? <Stack direction={{xs: 'column', sm: 'row'}} spacing={1} alignItems={{xs: 'stretch', sm: 'center'}}>
                     <LoadingButton variant={'contained'} color={'warning'} loading={submitting} onClick={submitData}>Submit</LoadingButton>
-                    <Button color='info' variant='contained' onClick={handleCancel} sx={{ml: 2}}>Cancel</Button>
-                </>
+                    <Button color='info' variant='contained' onClick={handleCancel}>Cancel</Button>
+                </Stack>
                 : <Stack direction={{xs: 'column', sm: 'row'}} alignItems={{xs: 'stretch', sm: 'center'}} spacing={1}>
                     <LoadingButton variant='contained' color={'warning'} loading={loading}
                                    loadingPosition='start'

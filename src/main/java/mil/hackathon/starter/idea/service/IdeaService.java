@@ -11,6 +11,7 @@ import mil.hackathon.starter.tag.db.Tag;
 import mil.hackathon.starter.tag.db.TagRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,7 +29,7 @@ public class IdeaService {
         return ideaRepository.findAllByOrderByIdAsc();
     }
 
-    public void addIdea(Idea idea) {
+    public Idea addIdea(Idea idea) {
         if (idea.getTags() != null && !idea.getTags().isEmpty()) {
             Set<Tag> tags = idea.getTags().stream()
                     .map(tag -> tagRepository.findById(tag.getId())
@@ -58,7 +59,8 @@ public class IdeaService {
         if (idea.getStage() == null) {
             idea.setStage(Stage.SUBMITTED);
         }
-        ideaRepository.save(idea);
+        idea.setLastUpdated(OffsetDateTime.now());
+        return ideaRepository.save(idea);
     }
 
     private Optional<InnovationCell> findBestRoutingCell(Idea idea, List<InnovationCell> cells) {
@@ -161,7 +163,7 @@ public class IdeaService {
         return value == null ? "" : value.toUpperCase();
     }
 
-    public void updateInnovationCell(Long id, Long innovationCellId) {
+    public Optional<Idea> updateInnovationCell(Long id, Long innovationCellId) {
         Optional<Idea> maybeIdea = ideaRepository.findById(id);
         if (maybeIdea.isPresent()) {
             Idea idea = maybeIdea.get();
@@ -180,12 +182,14 @@ public class IdeaService {
                     log.info("Assigning idea {} to innovation cell {}", id, innovationCellId);
                 } else {
                     log.warn("Innovation cell {} not found", innovationCellId);
-                    return;
+                    return Optional.empty();
                 }
             }
-            ideaRepository.save(idea);
+            idea.setLastUpdated(OffsetDateTime.now());
+            return Optional.of(ideaRepository.save(idea));
         } else {
             log.warn("Idea {} not found", id);
+            return Optional.empty();
         }
     }
 }

@@ -67,7 +67,8 @@ export const Header = () => {
                     display="flex"
                     justifyContent="space-between"
                     alignItems="center"
-                    width="100%"
+                    flexGrow={1}
+                    minWidth={0}
                     gap={1}
                 >
                     <Button
@@ -79,18 +80,24 @@ export const Header = () => {
                             textTransform: 'none',
                             p: 0,
                             minWidth: 0,
+                            maxWidth: {xs: 'calc(100vw - 96px)', sm: 'none'},
                         }}
                     >
                         <StyledImage
                             src="/favicon_dragonSpark.png"
                             alt="Dragon Spark logo"
-                            sx={{height: {xs: 44, sm: 60}, marginRight: {xs: 1, sm: 2}}}
+                            sx={{height: {xs: 40, sm: 56}, marginRight: {xs: 1, sm: 2}}}
                         />
                         <Typography
                             variant="h5"
                             fontWeight="bold"
                             color="white"
-                            sx={{fontSize: {xs: '1.15rem', sm: '1.5rem'}, whiteSpace: 'nowrap'}}
+                            sx={{
+                                fontSize: {xs: '1.05rem', sm: '1.35rem'},
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                            }}
                         >
                             Dragon Spark
                         </Typography>
@@ -139,7 +146,7 @@ export const Header = () => {
                     }
                 }}
             >
-                <List sx={{minWidth: 260}}>
+                <List sx={{width: 'min(320px, 86vw)'}}>
                     {menuItems.map((item) => (
                         <ListItem button key={item.text} onClick={() => handleNavigate(item.href)}>
                             <ListItemText primary={item.text} />

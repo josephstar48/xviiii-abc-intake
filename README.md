@@ -1,57 +1,93 @@
+# Dragon Spark
 
-# Getting Started
+Dragon Spark is an XVIII Airborne Corps mission intake dashboard for Soldier-led problems and digital capability visibility. It helps users submit operational problems quickly, route them to the right Corps or division innovation cell, track status, and give Corps staff a single triage view across subordinate units.
 
-1. Add `pre-commit` hook to ensure all code is linted before pushing
-    ```shell script
-      mkdir .git/hooks
-      touch .git/hooks/pre-commit
-      cp commit-hooks/pre-commit .git/hooks/pre-commit
-      chmod +x .git/hooks/pre-commit
-    ```
-## Java and Node Versions Needed
-You will need Java 17 and node version 20
+## Current Capabilities
 
-## Running the App Locally
+- Mission problem submission with a manual path or optional Gemini-assisted drafting.
+- Required-field validation and post-submit confirmation.
+- Automatic routing by unit/division, with an ODS lane for Corps-level software, data, AI, automation, and network/communications problems.
+- Manual Corps staff routing from the admin view.
+- Status dashboard by echelon across Submitted, Scoped, Assigned, In Prototype, Testing, and Delivered.
+- Corps staff admin view with search, filters, urgency/status sorting, summary metrics, and POC/last-updated visibility.
+- Digital capability catalog to reduce duplicated software, dashboards, spreadsheets, AI tools, and related efforts.
 
-### Start local services
+## Requirements
 
-Run `docker-compose up -d` to start the Postgres container.
+- Java 17
+- Node 20
+- Docker
+- Yarn or npm
 
-### Configure Gemini AI
+## Local Setup
 
-Dragon Spark uses Gemini through the Spring Boot backend. Create or copy a free-tier API key in Google AI Studio, then start the backend with the key set as an environment variable.
+Start Postgres:
+
+```shell
+docker-compose up -d
+```
+
+Configure Gemini AI if you want AI-assisted drafting:
 
 ```shell
 export GEMINI_API_KEY="your-google-ai-studio-api-key"
 export GEMINI_MODEL="gemini-3.5-flash"
 ```
 
-You can also put those same values in a local `.env` file at the project root:
+You can also put those values in a local `.env` file at the project root:
 
 ```shell
 GEMINI_API_KEY=your-google-ai-studio-api-key
 GEMINI_MODEL=gemini-3.5-flash
 ```
 
-Do not paste the key into source code or commit it to git.
+Do not commit API keys or local secrets.
 
-### Start backend server
+Apply database migrations:
 
-`./gradlew bootRun`
+```shell
+./gradlew flywayMigrate
+```
 
-The backend will be running locally at [http://localhost:8080](http://localhost:8080).
+Start the backend:
 
-### Start frontend development server
+```shell
+./gradlew bootRun
+```
 
-**Note**: Enables hot module reload (HMR) on [http://localhost:3000](http://localhost:3000).
+The backend runs at [http://localhost:8080](http://localhost:8080).
+
+Start the frontend development server:
 
 ```shell
 cd frontend
 yarn start
 ```
 
-For local development, use `http://` rather than `https://` unless you have configured TLS separately.
+The frontend runs at [http://localhost:3000](http://localhost:3000).
 
-## Proposed UML Diagram
+## Useful Commands
 
-![](docs/uml-diagram.png)
+Run backend tests:
+
+```shell
+./gradlew test
+```
+
+Compile the frontend:
+
+```shell
+cd frontend
+npm run compile
+```
+
+Build the frontend:
+
+```shell
+cd frontend
+npm run build
+```
+
+## Notes
+
+The app currently records `lastUpdated` for submissions and assignment changes. It does not yet track separate created, scoped, tested, or delivered dates, so quarterly delivery reporting will require additional timestamp fields.

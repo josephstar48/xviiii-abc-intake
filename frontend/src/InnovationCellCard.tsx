@@ -36,11 +36,11 @@ const logoMap: { [key: string]: string } = {
 const StyledCard = styled(Card)(() => ({
     width: '100%',
     maxWidth: 360,
-    minHeight: 300,
+    minHeight: 260,
     color: 'white',
     borderRadius: 8,
-    border: '1px solid #353535',
-    background: 'linear-gradient(to bottom, #000000, #1a1a1a)',
+    border: '1px solid #374151',
+    background: '#1F2937',
 }));
 
 export interface Tag {
@@ -109,25 +109,25 @@ export const InnovationCellCard = ({
     return (
         <>
             <StyledCard sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-                <CardContent sx={{flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
+                <CardContent sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2}}>
                     <Box display="flex" alignItems="center" mb={1}>
                         <CardMedia
                             component="img"
                             image={logoMap[name] ?? '/XVIII ABC Dragon Spark Logo-modified.png'}
                             alt={`${name} insignia`}
-                            sx={{width: 54, height: 60, marginRight: 1, objectFit: 'contain'}}
+                            sx={{width: 44, height: 48, marginRight: 1, objectFit: 'contain'}}
                         />
-                        <Typography variant="h5" sx={{lineHeight: 1.1, fontSize: {xs: '1.15rem', sm: '1.35rem', md: '1.5rem'}}}>{name}</Typography>
+                        <Typography variant="h6" sx={{lineHeight: 1.2, fontSize: {xs: '1rem', sm: '1.1rem'}}}>{name}</Typography>
                     </Box>
-                    <Box display="flex" flexWrap="wrap" mb={2}>
+                    <Box display="flex" flexWrap="wrap" mb={1.5}>
                         {tags.map((tag) => (
                             <TagChip key={tag.id} chipName={tag.name}/>
                         ))}
                     </Box>
-                    <Typography variant="body1" mb={1}>
+                    <Typography variant="body2" fontWeight="bold" mb={0.75}>
                         {title}
                     </Typography>
-                    <Typography variant="body2" sx={{opacity: 0.7}} mb={2}>
+                    <Typography variant="body2" sx={{opacity: 0.76}} mb={2}>
                         {description}
                     </Typography>
                     <Box sx={{mt: 'auto'}}>

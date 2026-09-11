@@ -1,0 +1,6 @@
+ALTER TABLE idea
+ADD COLUMN last_updated TIMESTAMP WITH TIME ZONE;
+
+UPDATE idea
+SET last_updated = CURRENT_TIMESTAMP
+WHERE last_updated IS NULL;

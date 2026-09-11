@@ -26,7 +26,7 @@ export const GenericModal = (props: GenericModalProps) => {
                     "& .MuiPaper-root": {
                         width: '100%',
                         maxWidth: '1200px',
-                        margin: {xs: 1, sm: 4},
+                        margin: {xs: 0, sm: 4},
                     }
                 },
                 "& .MuiOutlinedInput-root": {
@@ -38,7 +38,7 @@ export const GenericModal = (props: GenericModalProps) => {
                 pt={3}
                 pb={2}
                 px={{xs: 2, sm: 4}}
-                maxHeight={{xs: '100%', sm: '90vh'}}
+                maxHeight={{xs: '100vh', sm: '90vh'}}
                 width={{xs: '100%', sm: 650}}
                 maxWidth="100%"
                 borderRadius='4px'

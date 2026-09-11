@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   Box,
   Button,
-  Chip,
   FormControl,
   Grid,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
@@ -18,79 +19,21 @@ import {
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { getIdeas, Idea } from "./api/ideasApi";
 import { IdeaSubmission } from "./IdeaSubmission";
-import { getTags, Tags } from "./api/tagsApi";
 import {getInnovationCells, InnovationCell, updateInnovationCell} from "./api/innovationCellApi";
 import { IdeaViewerModal } from "./IdeaViewerModal";
 import {DocumentsIconButton} from "./DocumentsIconButton";
-
-const stageLabels = ['Submitted', 'Scoped', 'Assigned', 'In Prototype', 'Testing', 'Delivered'];
-const urgencyOrder: Record<string, number> = {
-  'Critical - current mission impact': 4,
-  'High - needed before training event or deployment': 3,
-  'Medium - needed this quarter': 2,
-  'Low - improvement opportunity': 1
-};
-
-type StageChipProp = {
-  stage: number | string,
-  compact?: boolean
-};
-
-const StageChip: React.FC<StageChipProp> = (props) => {
-  const { stage, compact } = props;
-  const size = compact ? 'small' : 'medium';
-
-  const getStageConfig = (stageValue: number | string): { label: string; color: string, textColor: string } => {
-    switch (stageValue) {
-      case 0:
-      case "SUBMITTED":
-        return { label: "SUBMITTED", color: "#E0F2FE", textColor: "#0369A1"};
-      case 1:
-      case "SCOPED":
-        return { label: "SCOPED", color: "#FEF9C3", textColor: "#854D0E" };
-      case 2:
-      case "ASSIGNED":
-        return { label: "ASSIGNED", color: "#DBEAFE", textColor: "#1D4ED8" };
-      case 3:
-      case "IN_PROTOTYPE":
-        return { label: "IN PROTOTYPE", color: "#E0F2FE", textColor: "#0369A1" };
-      case 4:
-      case "TESTING":
-        return { label: "TESTING", color: "#F3E8FF", textColor: "#7E22CE" }
-      case 5:
-      case "DELIVERED":
-        return { label: "DELIVERED", color: "#DCFCE7", textColor: "#15803D" };
-      default:
-        return { label: "UNKNOWN", color: "#E5E7EB", textColor: "#374151" };
-    }
-  };
-
-  const { label, color, textColor } = getStageConfig(stage);
-
-  return (
-    <Chip
-      size={size}
-      label={label}
-      data-testid={label}
-      sx={{
-        fontWeight: 'bold',
-        backgroundColor: color,
-        color: textColor,
-        '&:hover': {
-          backgroundColor: color, // Maintain color on hover
-        }
-      }}
-    />
-  );
-};
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
+import {StageChip} from "./StageChip";
+import {formatLastUpdated, getStageLabel, stageLabels, urgencyOrder} from "./workflowUtils";
 
 const IdeasStatusGrid: React.FC = () => {
   const theme = useTheme();
 
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState('');
   const [openSubmissionModal, setOpenSubmissionModal] = useState<boolean>(false);
-  const [tags, setTags] = useState<Tags[]>([]);
   const [innovationCells, setInnovationCells] = useState<InnovationCell[]>([]);
   const [viewedIdea, setViewedIdea] = useState<Idea | null>(null);
   const [search, setSearch] = useState('');
@@ -98,19 +41,18 @@ const IdeasStatusGrid: React.FC = () => {
   const [urgencyFilter, setUrgencyFilter] = useState('');
 
   const loadIdeas = () => {
+    setLoadError('');
     Promise.all([
       getIdeas(),
       getInnovationCells(),
-      getTags(),
     ])
-      .then(([ideasData, innovationCellsData, tagsData]) => {
+      .then(([ideasData, innovationCellsData]) => {
         setIdeas(ideasData);
         setInnovationCells(innovationCellsData);
-        setTags(tagsData);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
-        console.log(tags)
+        setLoadError('Unable to load status data. Check that the backend API is running, then refresh.');
       })
       .finally(() => setLoading(false));
   }
@@ -157,28 +99,6 @@ const IdeasStatusGrid: React.FC = () => {
       flex: 6,
       sortComparator: (a, b) => Number(a) - Number(b),
       renderCell: (params) => <StageChip stage={params.value} />,
-    },
-    {
-      field: 'tags',
-      headerName: 'Tag',
-      headerAlign: 'center',
-      align: 'center',
-      flex: 6,
-      renderCell: (params) => {
-        const ideaTags: Tags[] = params.value;
-        const firstTag = ideaTags && ideaTags.length > 0 ? ideaTags[0] : null;
-        return firstTag ? (
-          <Chip
-            label={firstTag.name}
-            size="small"
-            style={{ fontSize: '0.8rem' }}
-          />
-        ) : null;
-      },
-      valueFormatter: (params) => {
-        const tags: Tags[] = params.value;
-        return tags && tags.length > 0 ? tags[0].name : '';
-      },
     },
     {
       field: 'unitDivision',
@@ -237,6 +157,22 @@ const IdeasStatusGrid: React.FC = () => {
       flex: 9
     },
     {
+      field: 'poc',
+      headerName: 'POC',
+      headerAlign: 'center',
+      align: 'center',
+      flex: 8,
+      valueGetter: (params) => params.row.innovationCell?.email || 'Pending assignment'
+    },
+    {
+      field: 'lastUpdated',
+      headerName: 'Last Updated',
+      headerAlign: 'center',
+      align: 'center',
+      flex: 8,
+      valueFormatter: (params) => formatLastUpdated(params.value)
+    },
+    {
       field: 'documents',
       headerName: 'Documents',
       headerAlign: 'center',
@@ -250,7 +186,7 @@ const IdeasStatusGrid: React.FC = () => {
     const normalizedSearch = search.trim().toLowerCase();
 
     return ideas.filter((idea) => {
-      const stageLabel = stageLabels[Number(idea.stage)] || 'Unknown';
+      const stageLabel = getStageLabel(idea.stage);
       const searchableText = [
         idea.title,
         idea.problemStatement,
@@ -277,6 +213,13 @@ const IdeasStatusGrid: React.FC = () => {
   const criticalGaps = ideas.filter(idea => idea.urgency === 'Critical - current mission impact').length;
   const unassigned = ideas.filter(idea => !idea.innovationCell).length;
   const delivered = ideas.filter(idea => Number(idea.stage) === 5).length;
+  const hasActiveFilters = Boolean(search || statusFilter || urgencyFilter);
+
+  const clearFilters = () => {
+    setSearch('');
+    setStatusFilter('');
+    setUrgencyFilter('');
+  };
 
   const stageDashboardColumns: GridColDef[] = [
     {
@@ -389,12 +332,18 @@ const IdeasStatusGrid: React.FC = () => {
   }, [filteredIdeas]);
 
   const renderMetric = (label: string, value: number, helper?: string) => (
-    <Box sx={{border: '1px solid #334155', borderRadius: 2, p: 2, backgroundColor: '#111827', minHeight: 104}}>
+    <Box sx={{border: '1px solid #334155', borderRadius: 1, p: 1.5, backgroundColor: '#1F2937', minHeight: 88}}>
       <Typography variant="caption" color={theme.palette.text.secondary}>{label}</Typography>
       <Typography variant="h4" color="white" fontWeight="bold">{value}</Typography>
       {helper && <Typography variant="caption" color={theme.palette.text.secondary}>{helper}</Typography>}
     </Box>
   );
+
+  const filterControlSx = {
+    flex: {xs: '1 1 100%', sm: '1 1 180px'},
+    backgroundColor: '#F8FAFC',
+    borderRadius: 1
+  };
 
   function handleRowClick(id: number) {
     const idea = ideas.find(idea => idea.id === id);
@@ -423,37 +372,41 @@ const IdeasStatusGrid: React.FC = () => {
         <Grid item xs={12} md={4}>{renderMetric('Unassigned', unassigned, 'Needs routing')}</Grid>
         <Grid item xs={12} md={4}>{renderMetric('Delivered', delivered, 'Delivery dates not yet captured')}</Grid>
       </Grid>
-      <Stack direction={{xs: 'column', md: 'row'}} spacing={2} mb={3}>
-        <TextField
-          size="small"
-          placeholder="Search title, unit, status, urgency, routing notes"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          sx={{flex: 1, backgroundColor: '#D2D2D4', borderRadius: 1}}
-        />
-        <FormControl size="small" sx={{minWidth: {xs: '100%', md: 190}, backgroundColor: '#D2D2D4', borderRadius: 1}}>
-          <InputLabel>Status</InputLabel>
-          <Select
-            label="Status"
-            value={statusFilter}
-            onChange={(event: SelectChangeEvent<string>) => setStatusFilter(event.target.value)}
-          >
-            <MenuItem value="">All statuses</MenuItem>
-            {stageLabels.map((stage) => <MenuItem key={stage} value={stage}>{stage}</MenuItem>)}
-          </Select>
-        </FormControl>
-        <FormControl size="small" sx={{minWidth: {xs: '100%', md: 290}, backgroundColor: '#D2D2D4', borderRadius: 1}}>
-          <InputLabel>Urgency</InputLabel>
-          <Select
-            label="Urgency"
-            value={urgencyFilter}
-            onChange={(event: SelectChangeEvent<string>) => setUrgencyFilter(event.target.value)}
-          >
-            <MenuItem value="">All urgency levels</MenuItem>
-            {Object.keys(urgencyOrder).map((urgency) => <MenuItem key={urgency} value={urgency}>{urgency}</MenuItem>)}
-          </Select>
-        </FormControl>
-      </Stack>
+      {loadError && <Alert severity="error" sx={{mb: 2}}>{loadError}</Alert>}
+      <Box sx={{border: '1px solid #334155', borderRadius: 1, backgroundColor: '#111827', p: 1.5, mb: 3}}>
+        <Stack direction="row" spacing={1.5} useFlexGap flexWrap="wrap" alignItems="center">
+          <Typography variant="subtitle2" color="white" fontWeight="bold" sx={{width: {xs: '100%', sm: 'auto'}, minWidth: 70}}>
+            Filters
+          </Typography>
+          <TextField
+            size="small"
+            placeholder="Search title, unit, status, urgency, notes"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            InputProps={{startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small"/></InputAdornment>}}
+            sx={{flex: {xs: '1 1 100%', sm: '2 1 320px'}, backgroundColor: '#F8FAFC', borderRadius: 1}}
+          />
+          <FormControl size="small" sx={filterControlSx}>
+            <InputLabel>Status</InputLabel>
+            <Select label="Status" value={statusFilter} onChange={(event: SelectChangeEvent<string>) => setStatusFilter(event.target.value)}>
+              <MenuItem value="">All statuses</MenuItem>
+              {stageLabels.map((stage) => <MenuItem key={stage} value={stage}>{stage}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{...filterControlSx, flex: {xs: '1 1 100%', sm: '1 1 260px'}}}>
+            <InputLabel>Urgency</InputLabel>
+            <Select label="Urgency" value={urgencyFilter} onChange={(event: SelectChangeEvent<string>) => setUrgencyFilter(event.target.value)}>
+              <MenuItem value="">All urgency levels</MenuItem>
+              {Object.keys(urgencyOrder).map((urgency) => <MenuItem key={urgency} value={urgency}>{urgency}</MenuItem>)}
+            </Select>
+          </FormControl>
+          {hasActiveFilters && (
+            <Button color="info" variant="outlined" startIcon={<ClearIcon/>} onClick={clearFilters} sx={{height: 40, whiteSpace: 'nowrap', flex: {xs: '1 1 100%', sm: '0 0 auto'}}}>
+              Clear
+            </Button>
+          )}
+        </Stack>
+      </Box>
       <Box mb={3}>
         <Typography variant="h6" component="h2" color="white" fontWeight="bold" mb={1}>
           Status Dashboard by Echelon
@@ -464,6 +417,7 @@ const IdeasStatusGrid: React.FC = () => {
               rows={stageDashboardRows}
               columns={stageDashboardColumns}
               loading={loading}
+              density="compact"
               disableRowSelectionOnClick
               sx={{
                 '& .MuiDataGrid-columnHeaders': {
@@ -495,6 +449,7 @@ const IdeasStatusGrid: React.FC = () => {
             rows={filteredIdeas}
             columns={columns}
             loading={loading}
+            density="compact"
             onRowClick={params => handleRowClick(params.id as number)}
             sx={{
               '& .MuiDataGrid-columnHeaders': {

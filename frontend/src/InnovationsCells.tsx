@@ -18,9 +18,6 @@ import {getAllInnovationCells} from "./Client";
 import {theme} from "./theme";
 import {Footer} from "./Footer";
 import {IdeaSubmission} from "./IdeaSubmission";
-import {getIdeas, Idea} from "./api/ideasApi";
-import {getInnovationCells, InnovationCell} from "./api/innovationCellApi";
-import {getTags, Tags} from "./api/tagsApi";
 
 import {useNavigate} from "react-router-dom";
 import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
@@ -45,29 +42,6 @@ const InnovationsCells = () => {
     const [submissionIsOpen, setSubmissionIsOpen] = useState(false)
     const [cellsAreLoading, setCellsAreLoading] = useState(true);
     const [cellsLoadError, setCellsLoadError] = useState('');
-
-    const [, setIdeas] = useState<Idea[]>([]);
-    const [, setLoading] = useState<boolean>(true);
-    const [, setTags] = useState<Tags[]>([]);
-    const [, setInnovationCells] = useState<InnovationCell[]>([]);
-
-    const loadIdeas = () => {
-        Promise.all([
-            getIdeas(),
-            getInnovationCells(),
-            getTags(),
-        ])
-            .then(([ideasData, innovationCellsData, tagsData]) => {
-                setIdeas(ideasData);
-                setInnovationCells(innovationCellsData);
-                setTags(tagsData);
-            })
-            .catch((error) => {
-                console.error("Error fetching data:", error);
-                navigate('/errorPage');
-            })
-            .finally(() => setLoading(false));
-    }
 
     const navigate = useNavigate();
 
@@ -105,11 +79,6 @@ const InnovationsCells = () => {
             <Box
                 sx={{
                     bgcolor: theme.palette.background.default,
-                    backgroundImage: "linear-gradient(rgba(18, 18, 18, 0.84), rgba(18, 18, 18, 0.84)), url('/XVIII ABC Dragon Spark Logo-modified.png')",
-                    backgroundPosition: 'center',
-                    backgroundAttachment: {xs: 'scroll', md: 'fixed'},
-                    backgroundSize: 'min(68vw, 680px)',
-                    backgroundRepeat: 'no-repeat',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -117,23 +86,23 @@ const InnovationsCells = () => {
                     overflowX: 'hidden',
                     px: {xs: 2, sm: 3},
                 }}>
-                <Box sx={{width: '100%', maxWidth: 1180, mt: {xs: 4, md: 6}, mb: 4}}>
-                    <Typography variant="h3" color="white" fontWeight="bold"
+                <Box sx={{width: '100%', maxWidth: 1180, mt: {xs: 3, md: 4}, mb: 3}}>
+                    <Typography variant="h4" color="white" fontWeight="bold"
                                 sx={{
-                                    mb: 1,
-                                    fontSize: {xs: '2rem', sm: '2.6rem', md: '3.4rem'},
+                                    mb: 0.75,
+                                    fontSize: {xs: '1.75rem', sm: '2rem', md: '2.35rem'},
                                     overflowWrap: 'anywhere'
                                 }}>
                         Where do I send my problem?
                     </Typography>
-                    <Typography variant="h6" color={theme.palette.text.secondary}
-                                sx={{maxWidth: 860, lineHeight: 1.45, mb: 3}}>
+                    <Typography variant="body1" color={theme.palette.text.secondary}
+                                sx={{maxWidth: 860, lineHeight: 1.5, mb: 2}}>
                         Start with the mission problem. Dragon Spark helps route it to Corps headquarters, JIOP, ODS,
                         or the right division innovation cell, while checking whether a similar digital capability is
                         already being built or reused.
                     </Typography>
 
-                    <Grid container spacing={2} mb={3}>
+                    <Grid container spacing={1.5} mb={2}>
                         <Grid item xs={12} md={4}>
                             <Button
                                 variant="contained"
@@ -141,7 +110,7 @@ const InnovationsCells = () => {
                                 startIcon={<AssignmentTurnedInOutlinedIcon/>}
                                 onClick={handleClick}
                                 fullWidth
-                                sx={{height: 64, justifyContent: 'flex-start', px: 2}}
+                                sx={{height: 48, justifyContent: 'flex-start', px: 1.5}}
                             >
                                 Submit a Problem
                             </Button>
@@ -153,7 +122,7 @@ const InnovationsCells = () => {
                                 startIcon={<Inventory2OutlinedIcon/>}
                                 onClick={() => navigate('/catalog')}
                                 fullWidth
-                                sx={{height: 64, justifyContent: 'flex-start', px: 2}}
+                                sx={{height: 48, justifyContent: 'flex-start', px: 1.5}}
                             >
                                 Check Existing Capabilities
                             </Button>
@@ -165,14 +134,14 @@ const InnovationsCells = () => {
                                 startIcon={<TimelineOutlinedIcon/>}
                                 onClick={() => navigate('/status')}
                                 fullWidth
-                                sx={{height: 64, justifyContent: 'flex-start', px: 2}}
+                                sx={{height: 48, justifyContent: 'flex-start', px: 1.5}}
                             >
                                 Track Submitted Work
                             </Button>
                         </Grid>
                     </Grid>
 
-                    <Box sx={{border: '1px solid #334155', borderRadius: 2, backgroundColor: '#111827', p: {xs: 2, md: 3}}}>
+                    <Box sx={{border: '1px solid #334155', borderRadius: 1, backgroundColor: '#1F2937', p: {xs: 1.5, md: 2}}}>
                         <Stack direction={{xs: 'column', lg: 'row'}} spacing={2} alignItems={{xs: 'stretch', lg: 'center'}}>
                             <Stack direction="row" spacing={1} alignItems="center" sx={{minWidth: {lg: 220}}}>
                                 <RouteOutlinedIcon sx={{color: '#FFD700'}}/>
@@ -203,13 +172,13 @@ const InnovationsCells = () => {
                     </Box>
                 </Box>
 
-                <Typography variant="h4" align="center" color="white"
+                <Typography variant="h5" align="center" color="white"
                             sx={{
                                 mb: 1,
                                 px: 2,
                                 fontWeight: 'bold',
                                 letterSpacing: 0,
-                                fontSize: {xs: '1.6rem', sm: '2rem', md: '2.5rem'},
+                                fontSize: {xs: '1.35rem', sm: '1.6rem', md: '1.9rem'},
                                 overflowWrap: 'anywhere'}}>
                     Recommended Innovation Cells
                 </Typography>
@@ -233,7 +202,7 @@ const InnovationsCells = () => {
 
                 {cellsAreLoading && <CircularProgress sx={{my: 4}} />}
 
-                <Grid container spacing={{xs: 2, md: 4}} justifyContent="center" sx={{width: '100%', mx: 0}}>
+                <Grid container spacing={{xs: 2, md: 2.5}} justifyContent="center" sx={{width: '100%', mx: 0}}>
                     {!cellsAreLoading && !cellsLoadError && (
                         routedCells.map((cell) => (
                             <Grid item xs={12} sm={6} md={4} lg={3} key={cell.id} sx={{display: 'flex', justifyContent: 'center'}}>
@@ -242,34 +211,21 @@ const InnovationsCells = () => {
                         ))
                     )}
                 </Grid>
-                    <Typography
-                        variant="h4"
-                        component="h2"
-                        fontWeight="light"
-                        mb={6}
-                        mt={10}
-                        color={theme.palette.common.white}
-                    >
-
-                        What is Dragon Spark?
-                    </Typography>
-                    <Typography
-                        align={'center'}
-                        color={theme.palette.text.secondary}
-                        variant={'h5'}
-                        fontWeight={'lighter'}
-                        lineHeight={1.5}
-                        sx={{width: {xs: '100%', md: '60%'}, fontSize: {xs: '1rem', sm: '1.25rem', md: '1.5rem'}}}
-                    >
-                        Dragon Spark is the XVIII Airborne Corps intake, triage, and routing system for Soldier-led
-                        problems. It connects Corps headquarters, JIOP, ODS, and subordinate division innovation cells
-                        so ideas can be scoped, assigned, prototyped, tested, and delivered across the formation.
-                    </Typography>
+                <Typography
+                    align={'center'}
+                    color={theme.palette.text.secondary}
+                    variant={'body2'}
+                    lineHeight={1.6}
+                    sx={{width: {xs: '100%', md: '70%'}, mt: 5, mb: 5}}
+                >
+                    Dragon Spark is the XVIII Airborne Corps intake, triage, and routing system for Soldier-led
+                    problems across Corps headquarters, JIOP, ODS, and subordinate division innovation cells.
+                </Typography>
                 <Footer/>
             </Box>
 
             <IdeaSubmission open={submissionIsOpen} setOpen={setSubmissionIsOpen}
-                            loadIdeas={loadIdeas} isOnDifferentPage/>
+                            loadIdeas={() => {}} isOnDifferentPage/>
 
         </>
     );

@@ -1,8 +1,13 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {
+    Alert,
     Box,
+    Button,
     Chip,
+    FormControl,
     Grid,
+    InputAdornment,
+    InputLabel,
     MenuItem,
     Select,
     SelectChangeEvent,
@@ -15,16 +20,8 @@ import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {getIdeas, Idea} from "./api/ideasApi";
 import {Stage} from "./enum/Stage";
 import {StageChip} from "./StageChip";
-
-const stageLabels = ['Submitted', 'Scoped', 'Assigned', 'In Prototype', 'Testing', 'Delivered'];
-
-const getStageName = (stage: Stage | string | number) => {
-    if (typeof stage === 'number') {
-        return stageLabels[stage] || 'Unknown';
-    }
-
-    return stage.toString().replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
-};
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 
 const getReuseStatus = (idea: Idea) => {
     const stage = Number(idea.stage);
@@ -44,13 +41,19 @@ const DigitalCapabilityCatalog = () => {
     const theme = useTheme();
     const [ideas, setIdeas] = useState<Idea[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [search, setSearch] = useState('');
     const [laneFilter, setLaneFilter] = useState('');
     const [echelonFilter, setEchelonFilter] = useState('');
 
     useEffect(() => {
+        setLoadError('');
         getIdeas()
             .then(setIdeas)
+            .catch((error) => {
+                console.error("Error fetching digital capability catalog:", error);
+                setLoadError('Unable to load the capability catalog. Check that the backend API is running, then refresh.');
+            })
             .finally(() => setLoading(false));
     }, []);
 
@@ -80,6 +83,13 @@ const DigitalCapabilityCatalog = () => {
 
     const reuseCount = ideas.filter(idea => Number(idea.stage) >= Stage.TESTING).length;
     const coordinatedCount = ideas.filter(idea => Number(idea.stage) >= Stage.ASSIGNED && Number(idea.stage) < Stage.TESTING).length;
+    const hasActiveFilters = Boolean(search || laneFilter || echelonFilter);
+
+    const clearFilters = () => {
+        setSearch('');
+        setLaneFilter('');
+        setEchelonFilter('');
+    };
 
     const columns: GridColDef[] = [
         {field: 'title', headerName: 'Capability / Problem', flex: 12, minWidth: 220},
@@ -137,11 +147,17 @@ const DigitalCapabilityCatalog = () => {
     ];
 
     const renderMetric = (label: string, value: number | string) => (
-        <Box sx={{border: '1px solid #334155', borderRadius: 2, p: 2, backgroundColor: '#111827', minHeight: 94}}>
+        <Box sx={{border: '1px solid #334155', borderRadius: 1, p: 1.5, backgroundColor: '#1F2937', minHeight: 88}}>
             <Typography variant="caption" color={theme.palette.text.secondary}>{label}</Typography>
             <Typography variant="h4" color="white" fontWeight="bold">{value}</Typography>
         </Box>
     );
+
+    const filterControlSx = {
+        flex: {xs: '1 1 100%', sm: '1 1 220px'},
+        backgroundColor: '#F8FAFC',
+        borderRadius: 1
+    };
 
     return (
         <Box sx={{width: '100%', p: {xs: 0, sm: 2, md: 3}, pb: 4}}>
@@ -151,6 +167,7 @@ const DigitalCapabilityCatalog = () => {
             <Typography variant="body1" color={theme.palette.text.secondary} mb={3}>
                 Corps-level visibility of applications, dashboards, spreadsheets, AI tools, and other digital efforts being scoped, built, tested, or reused.
             </Typography>
+            {loadError && <Alert severity="error" sx={{mb: 2}}>{loadError}</Alert>}
 
             <Grid container spacing={2} mb={3}>
                 <Grid item xs={12} sm={4}>{renderMetric('Tracked Efforts', ideas.length)}</Grid>
@@ -158,35 +175,40 @@ const DigitalCapabilityCatalog = () => {
                 <Grid item xs={12} sm={4}>{renderMetric('Coordinate Before Duplicating', coordinatedCount)}</Grid>
             </Grid>
 
-            <Stack direction={{xs: 'column', md: 'row'}} spacing={2} mb={2}>
-                <TextField
-                    size="small"
-                    placeholder="Search problem, owner, unit, or capability"
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    sx={{flex: 1, backgroundColor: '#D2D2D4', borderRadius: 1}}
-                />
-                <Select
-                    size="small"
-                    value={laneFilter}
-                    displayEmpty
-                    onChange={(event: SelectChangeEvent<string>) => setLaneFilter(event.target.value)}
-                    sx={{minWidth: {xs: '100%', md: 220}, backgroundColor: '#D2D2D4'}}
-                >
-                    <MenuItem value="">All capability lanes</MenuItem>
-                    {lanes.map((lane) => <MenuItem key={lane} value={lane}>{lane}</MenuItem>)}
-                </Select>
-                <Select
-                    size="small"
-                    value={echelonFilter}
-                    displayEmpty
-                    onChange={(event: SelectChangeEvent<string>) => setEchelonFilter(event.target.value)}
-                    sx={{minWidth: {xs: '100%', md: 240}, backgroundColor: '#D2D2D4'}}
-                >
-                    <MenuItem value="">All sponsoring orgs</MenuItem>
-                    {echelons.map((echelon) => <MenuItem key={echelon} value={echelon}>{echelon}</MenuItem>)}
-                </Select>
-            </Stack>
+            <Box sx={{border: '1px solid #334155', borderRadius: 1, backgroundColor: '#111827', p: 1.5, mb: 2}}>
+                <Stack direction="row" spacing={1.5} useFlexGap flexWrap="wrap" alignItems="center">
+                    <Typography variant="subtitle2" color="white" fontWeight="bold" sx={{width: {xs: '100%', sm: 'auto'}, minWidth: 70}}>
+                        Filters
+                    </Typography>
+                    <TextField
+                        size="small"
+                        placeholder="Search problem, owner, unit, capability"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        InputProps={{startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small"/></InputAdornment>}}
+                        sx={{flex: {xs: '1 1 100%', sm: '2 1 320px'}, backgroundColor: '#F8FAFC', borderRadius: 1}}
+                    />
+                    <FormControl size="small" sx={filterControlSx}>
+                        <InputLabel>Capability Lane</InputLabel>
+                        <Select label="Capability Lane" value={laneFilter} onChange={(event: SelectChangeEvent<string>) => setLaneFilter(event.target.value)}>
+                            <MenuItem value="">All lanes</MenuItem>
+                            {lanes.map((lane) => <MenuItem key={lane} value={lane}>{lane}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <FormControl size="small" sx={{...filterControlSx, flex: {xs: '1 1 100%', sm: '1 1 240px'}}}>
+                        <InputLabel>Sponsoring Org</InputLabel>
+                        <Select label="Sponsoring Org" value={echelonFilter} onChange={(event: SelectChangeEvent<string>) => setEchelonFilter(event.target.value)}>
+                            <MenuItem value="">All orgs</MenuItem>
+                            {echelons.map((echelon) => <MenuItem key={echelon} value={echelon}>{echelon}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    {hasActiveFilters && (
+                        <Button color="info" variant="outlined" startIcon={<ClearIcon/>} onClick={clearFilters} sx={{height: 40, whiteSpace: 'nowrap', flex: {xs: '1 1 100%', sm: '0 0 auto'}}}>
+                            Clear
+                        </Button>
+                    )}
+                </Stack>
+            </Box>
 
             <Box sx={{width: '100%', overflowX: 'auto'}}>
                 <Box sx={{height: {xs: 560, md: 640}, minWidth: {xs: 1180, md: '100%'}}}>
@@ -194,6 +216,7 @@ const DigitalCapabilityCatalog = () => {
                         rows={filteredIdeas}
                         columns={columns}
                         loading={loading}
+                        density="compact"
                         getRowHeight={() => 'auto'}
                         sx={{
                             '& .MuiDataGrid-columnHeaders': {

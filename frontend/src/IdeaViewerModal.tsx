@@ -4,6 +4,7 @@ import {Stage} from "./enum/Stage";
 import {StageChip} from "./StageChip";
 import {GenericModal} from "./GenericModal";
 import React, {Dispatch, SetStateAction} from "react";
+import {formatLastUpdated} from "./workflowUtils";
 
 type IdeaViewerModalProps = {
     open: boolean,
@@ -48,6 +49,10 @@ export const IdeaViewerModal = (props: IdeaViewerModalProps) => {
                             border: '1px solid #0369A1'
                         }}
                       />}
+            </Stack>
+            <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} mb={2}>
+                <TextField size='small' label="POC" fullWidth value={idea?.innovationCell?.email ?? 'Pending assignment'}/>
+                <TextField size='small' label="Last Updated" fullWidth value={formatLastUpdated(idea?.lastUpdated)}/>
             </Stack>
             <FormLabel sx={{color: theme.palette.common.black}}>Title</FormLabel>
             <TextField size='small' variant='outlined' fullWidth value={idea?.title ?? ''}

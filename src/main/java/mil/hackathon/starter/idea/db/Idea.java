@@ -10,6 +10,7 @@ import org.hibernate.annotations.Cascade;
 
 import java.util.List;
 import java.util.Set;
+import java.time.OffsetDateTime;
 
 @Entity
 @Builder
@@ -33,6 +34,7 @@ public class Idea {
     String urgency;
     String capabilityLane;
     String routingNotes;
+    OffsetDateTime lastUpdated;
 
     @OneToOne
     @JoinColumn(name = "submitter_id")

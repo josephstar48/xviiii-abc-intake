@@ -16,6 +16,7 @@ export type Idea =
     urgency: string;
     capabilityLane: string;
     routingNotes: string;
+    lastUpdated: string;
     submitter:{
       id: number,
       firstName: string,

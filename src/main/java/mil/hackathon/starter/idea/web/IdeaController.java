@@ -20,14 +20,14 @@ public class IdeaController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> addIdea(@RequestBody Idea idea) {
-        ideaService.addIdea(idea);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Idea> addIdea(@RequestBody Idea idea) {
+        return ResponseEntity.ok(ideaService.addIdea(idea));
     }
 
     @PostMapping("/update-innovation-cell/{ideaId}")
-    public ResponseEntity<Void> updateInnovationCell(@PathVariable Long ideaId, @RequestBody(required = false) Long innovationCellId) {
-        ideaService.updateInnovationCell(ideaId, innovationCellId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Idea> updateInnovationCell(@PathVariable Long ideaId, @RequestBody(required = false) Long innovationCellId) {
+        return ideaService.updateInnovationCell(ideaId, innovationCellId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

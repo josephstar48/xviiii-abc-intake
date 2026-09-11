@@ -14,8 +14,6 @@ const LandingPage = () => {
   const DragonSparkEmphasis = styled('span')({
     color: '#FFD700',
     fontWeight: 'bold',
-    textShadow: '0 0 10px rgba(0,0,0,0.5)',
-    fontSize: '1.1em',
   });
 
   const Description = () => (
@@ -28,11 +26,10 @@ const LandingPage = () => {
 
   return (
     <Box sx={{
-      backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.72)), url('/XVIII ABC Dragon Spark Logo-modified.png')",
+      backgroundImage: "linear-gradient(rgba(18, 18, 18, 0.88), rgba(18, 18, 18, 0.88)), url('/XVIII ABC Dragon Spark Logo-modified.png')",
       backgroundRepeat: "no-repeat",
-      backgroundSize: "min(70vw, 760px)",
+      backgroundSize: "min(54vw, 520px)",
       backgroundPosition: "center",
-      backgroundAttachment: {xs: 'scroll', md: 'fixed'},
       minHeight: '100%',
       width: '100%',
       display: 'flex',
@@ -41,17 +38,15 @@ const LandingPage = () => {
     }}>
       <Container  sx={{ width: '100%', mt: {xs: 2, md: 8}, px: {xs: 2, sm: 3} }}>
         <Stack direction={{xs: 'column', md: 'row'}} justifyContent="space-between" spacing={{xs: 4, md: 6}}>
-          {/* Left side content */}
           <Box sx={{ width: {xs: '100%', md: '45%'}}}>
-            <Typography variant="h2" color="white" gutterBottom fontWeight="bold" sx={{ fontSize: {xs: '2.35rem', sm: '3rem', md: '3.5rem'} }}>
+            <Typography variant="h3" color="white" gutterBottom fontWeight="bold" sx={{ fontSize: {xs: '2rem', sm: '2.4rem', md: '2.8rem'} }}>
               Dragon Spark
             </Typography>
-            <Typography variant="h5" color="white" gutterBottom fontWeight="bold" sx={{fontSize: {xs: '1.15rem', sm: '1.35rem', md: '1.5rem'}}}>
+            <Typography variant="h6" color="white" gutterBottom fontWeight="bold" sx={{fontSize: {xs: '1.05rem', sm: '1.2rem', md: '1.3rem'}}}>
               XVIII Airborne Corps Innovation Hub
             </Typography>
             <Description />
           </Box>
-          {/* Right side content */}
           <Box sx={{ width: {xs: '100%', md: '45%'}}}>
             <Box
               sx={{
