@@ -25,6 +25,8 @@ import {IdeaSubmission} from "./IdeaSubmission";
 
 const logoMap: { [key: string]: string } = {
     'XVIII ABC / JIOP / ODS': '/xviii abc.png',
+    'XVIII ABC / JIOP': '/xviii abc.png',
+    'XVIII ABC / ODS': '/xviii abc.png',
     '82nd Airborne Division / Airborne Innovation Lab': '/82nd_Airborne_Division_CSIB.svg.webp',
     '101st Airborne Division / EagleWerx': '/US_101st_Airborne_Division_patch.svg.webp',
     '10th Mountain Division / MISIL': '/10th MTN DIV.png',

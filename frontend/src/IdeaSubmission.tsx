@@ -36,7 +36,7 @@ export type IdeaSubmissionProps = {
 }
 
 const unitDivisions = [
-    'XVIII ABC / JIOP / ODS',
+    'XVIII ABC / Corps Headquarters',
     '82nd Airborne Division',
     '101st Airborne Division (Air Assault)',
     '10th Mountain Division (Light)',

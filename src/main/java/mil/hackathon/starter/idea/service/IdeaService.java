@@ -62,6 +62,14 @@ public class IdeaService {
     }
 
     private Optional<InnovationCell> findBestRoutingCell(Idea idea, List<InnovationCell> cells) {
+        Optional<InnovationCell> odsMatch = cells.stream()
+                .filter(cell -> shouldRouteToOds(idea, cell))
+                .findFirst();
+
+        if (odsMatch.isPresent()) {
+            return odsMatch;
+        }
+
         Optional<InnovationCell> unitMatch = cells.stream()
                 .filter(cell -> shouldRouteByUnit(idea, cell))
                 .findFirst();
@@ -80,7 +88,7 @@ public class IdeaService {
         String cellName = normalize(cell.getName());
 
         if (unitDivision.contains("XVIII")) {
-            return isCorpsCell(cell);
+            return isCorpsIntakeCell(cell);
         }
         if (unitDivision.contains("82ND")) {
             return cellName.contains("82ND");
@@ -97,30 +105,56 @@ public class IdeaService {
         return false;
     }
 
+    private boolean shouldRouteToOds(Idea idea, InnovationCell cell) {
+        return isOdsCell(cell) && isCorpsLevelSubmission(idea) && isDigitalCapability(idea);
+    }
+
     private boolean shouldRouteToCorpsCell(Idea idea, InnovationCell cell) {
-        String lane = normalize(idea.getCapabilityLane());
         String problemType = normalize(idea.getProblemType());
 
-        return isCorpsCell(cell)
-                && (lane.contains("SOFTWARE")
-                || lane.contains("DATA")
-                || lane.contains("AI")
-                || problemType.contains("DATA")
-                || problemType.contains("COMMAND AND CONTROL")
+        return isCorpsIntakeCell(cell)
+                && (problemType.contains("COMMAND AND CONTROL")
                 || problemType.contains("C2"));
     }
 
-    private boolean isCorpsCell(InnovationCell cell) {
+    private boolean isDigitalCapability(Idea idea) {
+        String lane = normalize(idea.getCapabilityLane());
+
+        return lane.contains("SOFTWARE")
+                || lane.contains("APPLICATION")
+                || lane.contains("DATA")
+                || lane.contains("DASHBOARD")
+                || lane.contains("ANALYTICS")
+                || lane.contains("AI")
+                || lane.contains("AUTOMATION")
+                || lane.contains("NETWORK")
+                || lane.contains("COMMUNICATIONS");
+    }
+
+    private boolean isCorpsLevelSubmission(Idea idea) {
+        return normalize(idea.getUnitDivision()).contains("XVIII");
+    }
+
+    private boolean isOdsCell(InnovationCell cell) {
         String cellName = normalize(cell.getName());
-        return cellName.contains("XVIII") || cellName.contains("JIOP") || cellName.contains("ODS");
+        return cellName.contains("ODS") || cellName.contains("OPERATIONAL DATA");
+    }
+
+    private boolean isCorpsIntakeCell(InnovationCell cell) {
+        String cellName = normalize(cell.getName());
+        return (cellName.contains("XVIII") || cellName.contains("JIOP")) && !isOdsCell(cell);
     }
 
     private String buildAutoRoutingNote(Idea idea, InnovationCell cell) {
+        if (isOdsCell(cell)) {
+            return "Auto-routed to ODS for Corps-level software, data, or digital capability support.";
+        }
+
         if (shouldRouteByUnit(idea, cell)) {
             return "Auto-routed from submitted unit/division.";
         }
 
-        return "Auto-routed to Corps JIOP/ODS based on digital capability indicators.";
+        return "Auto-routed to Corps JIOP based on submitted problem type.";
     }
 
     private String normalize(String value) {
