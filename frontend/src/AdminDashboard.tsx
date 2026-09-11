@@ -61,9 +61,10 @@ const AdminDashboard = () => {
             flex: 7,
             renderCell: (params) => <StageChip stage={Stage[params.value]}/>
         },
+        {field: 'routingNotes', headerName: 'Routing Notes', flex: 12},
         {
             field: 'innovationCell',
-            headerName: 'Assigned Cell',
+            headerName: 'Manual Route',
             flex: 12,
             renderCell: (params) => (
                 <Select

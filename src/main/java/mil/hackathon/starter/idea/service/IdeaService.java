@@ -42,15 +42,17 @@ public class IdeaService {
                     .orElseThrow(() -> new RuntimeException("Innovation cell not found"));
             idea.setInnovationCell(innovationCell);
             idea.setStage(Stage.ASSIGNED);
+            idea.setRoutingNotes("Manually selected by submitter.");
         } else {
-            innovationCellRepository.findAll().stream()
-                    .filter(cell -> shouldRouteToCell(idea, cell))
-                    .findFirst()
-                    .ifPresent(cell -> {
-                        idea.setInnovationCell(cell);
-                        idea.setStage(Stage.ASSIGNED);
-                        idea.setRoutingNotes("Auto-routed by unit and capability lane.");
-                    });
+            Optional<InnovationCell> routedCell = findBestRoutingCell(idea, innovationCellRepository.findAll());
+
+            if (routedCell.isPresent()) {
+                idea.setInnovationCell(routedCell.get());
+                idea.setStage(Stage.ASSIGNED);
+                idea.setRoutingNotes(buildAutoRoutingNote(idea, routedCell.get()));
+            } else {
+                idea.setRoutingNotes("No confident automatic match. Corps admin should manually triage and assign.");
+            }
         }
 
         if (idea.getStage() == null) {
@@ -59,13 +61,26 @@ public class IdeaService {
         ideaRepository.save(idea);
     }
 
-    private boolean shouldRouteToCell(Idea idea, InnovationCell cell) {
+    private Optional<InnovationCell> findBestRoutingCell(Idea idea, List<InnovationCell> cells) {
+        Optional<InnovationCell> unitMatch = cells.stream()
+                .filter(cell -> shouldRouteByUnit(idea, cell))
+                .findFirst();
+
+        if (unitMatch.isPresent()) {
+            return unitMatch;
+        }
+
+        return cells.stream()
+                .filter(cell -> shouldRouteToCorpsCell(idea, cell))
+                .findFirst();
+    }
+
+    private boolean shouldRouteByUnit(Idea idea, InnovationCell cell) {
         String unitDivision = normalize(idea.getUnitDivision());
-        String lane = normalize(idea.getCapabilityLane());
         String cellName = normalize(cell.getName());
 
-        if (unitDivision.contains("XVIII") && (lane.contains("SOFTWARE") || lane.contains("DATA") || lane.contains("AI"))) {
-            return cellName.contains("JIOP") || cellName.contains("ODS");
+        if (unitDivision.contains("XVIII")) {
+            return isCorpsCell(cell);
         }
         if (unitDivision.contains("82ND")) {
             return cellName.contains("82ND");
@@ -82,6 +97,32 @@ public class IdeaService {
         return false;
     }
 
+    private boolean shouldRouteToCorpsCell(Idea idea, InnovationCell cell) {
+        String lane = normalize(idea.getCapabilityLane());
+        String problemType = normalize(idea.getProblemType());
+
+        return isCorpsCell(cell)
+                && (lane.contains("SOFTWARE")
+                || lane.contains("DATA")
+                || lane.contains("AI")
+                || problemType.contains("DATA")
+                || problemType.contains("COMMAND AND CONTROL")
+                || problemType.contains("C2"));
+    }
+
+    private boolean isCorpsCell(InnovationCell cell) {
+        String cellName = normalize(cell.getName());
+        return cellName.contains("XVIII") || cellName.contains("JIOP") || cellName.contains("ODS");
+    }
+
+    private String buildAutoRoutingNote(Idea idea, InnovationCell cell) {
+        if (shouldRouteByUnit(idea, cell)) {
+            return "Auto-routed from submitted unit/division.";
+        }
+
+        return "Auto-routed to Corps JIOP/ODS based on digital capability indicators.";
+    }
+
     private String normalize(String value) {
         return value == null ? "" : value.toUpperCase();
     }
@@ -92,6 +133,8 @@ public class IdeaService {
             Idea idea = maybeIdea.get();
             if (innovationCellId == null) {
                 idea.setInnovationCell(null);
+                idea.setStage(Stage.SUBMITTED);
+                idea.setRoutingNotes("Manual routing cleared. Awaiting Corps admin triage.");
                 log.info("Unassigning idea {} from innovation cell", id);
             } else {
                 Optional<InnovationCell> maybeInnovationCell = innovationCellRepository.findById(innovationCellId);
@@ -99,6 +142,7 @@ public class IdeaService {
                     InnovationCell innovationCell = maybeInnovationCell.get();
                     idea.setInnovationCell(innovationCell);
                     idea.setStage(Stage.ASSIGNED);
+                    idea.setRoutingNotes("Manually routed by Corps admin.");
                     log.info("Assigning idea {} to innovation cell {}", id, innovationCellId);
                 } else {
                     log.warn("Innovation cell {} not found", innovationCellId);

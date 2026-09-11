@@ -186,7 +186,7 @@ const IdeasStatusGrid: React.FC = () => {
     },
     {
       field: 'assigned',
-      headerName: 'Assigned To',
+      headerName: 'Manual Route',
       headerAlign: 'center',
       align: 'center',
       flex: 8,
@@ -210,6 +210,13 @@ const IdeasStatusGrid: React.FC = () => {
           ))}
         </Select>
       )
+    },
+    {
+      field: 'routingNotes',
+      headerName: 'Routing Notes',
+      headerAlign: 'center',
+      align: 'center',
+      flex: 9
     },
     {
       field: 'documents',

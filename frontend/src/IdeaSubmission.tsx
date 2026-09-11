@@ -19,7 +19,6 @@ import {LoadingButton} from "@mui/lab";
 import {AutoAwesome, Edit, Filter1, Filter2} from "@mui/icons-material";
 import axios from "axios";
 import {GenericModal} from "./GenericModal";
-import {getTags, Tags} from "./api/tagsApi";
 import {useNavigate} from "react-router-dom";
 import {ReactComponent as GeminiLogo} from "./assets/gemini.svg";
 import {getIdeas, Idea} from "./api/ideasApi";
@@ -45,39 +44,43 @@ const unitDivisions = [
 ];
 
 const problemTypes = [
-    'Operational process',
-    'Equipment or kit',
-    'Mission command',
-    'UAS / robotics',
-    'Data visibility',
-    'Training readiness',
-    'Sustainment'
+    'Command and Control (C2)',
+    'Movement and Maneuver',
+    'Intelligence',
+    'Fires',
+    'Sustainment',
+    'Protection'
 ];
 
 const operationalImpacts = [
-    'Tactical edge',
-    'Division operations',
-    'Corps-wide',
-    'Joint / coalition',
-    'Garrison support'
+    'Decision advantage',
+    'Lethality',
+    'Survivability / force protection',
+    'Mobility / tempo',
+    'Readiness / training',
+    'Sustainment / endurance',
+    'Efficiency / reduced workload',
+    'Interoperability / shared understanding'
 ];
 
 const urgencyLevels = [
-    'Routine',
-    'Near-term exercise',
-    'Deployment need',
-    'Immediate operational gap'
+    'Low - improvement opportunity',
+    'Medium - needed this quarter',
+    'High - needed before training event or deployment',
+    'Critical - current mission impact'
 ];
 
 const capabilityLanes = [
-    'Software',
-    'Hardware',
-    'Data',
-    'AI/ML',
-    'Training',
-    'Sustainment',
-    'UAV/Robotics',
-    'Manufacturing'
+    'Software / application',
+    'Data / dashboard / analytics',
+    'AI / automation',
+    'Hardware / device',
+    'UAS / robotics',
+    'Network / communications',
+    'Training product',
+    'Process improvement',
+    'Sustainment support',
+    'Not sure'
 ];
 
 export const IdeaSubmission = (props: IdeaSubmissionProps) => {
@@ -99,7 +102,6 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
     const [successMessage, setSuccessMessage] = useState('');
     const [completedGen, setCompletedGen] = useState(false);
     const [tabValue, setTabValue] = useState(0);
-    const [availableTags, setAvailableTags] = useState<Tags[]>([]);
     const [existingIdeas, setExistingIdeas] = useState<Idea[]>([]);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -120,7 +122,6 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
         unit: '',
         email: '',
         phone: '',
-        tagId: '',
         unitDivision: '',
         problemType: '',
         operationalImpact: '',
@@ -131,9 +132,8 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
     const [form, setForm] = useState(defaultFormData);
 
     useEffect(() => {
-        Promise.all([getTags(), getIdeas()])
-            .then(([tags, ideas]) => {
-                setAvailableTags(tags);
+        getIdeas()
+            .then((ideas) => {
                 setExistingIdeas(ideas);
             });
     }, []);
@@ -263,7 +263,7 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
                 phone: form.phone
             },
             stage: 0,
-            tags: form.tagId ? [{id: Number(form.tagId)}] : [],
+            tags: [],
             innovationCell: innovationCellId ? {id: Number(innovationCellId)} : null,
         }
 
@@ -451,24 +451,6 @@ export const IdeaSubmission = (props: IdeaSubmissionProps) => {
                         <Grid item xs={12} md={6}>{renderSelect('Operational Impact', 'operationalImpact', operationalImpacts)}</Grid>
                         <Grid item xs={12} md={6}>{renderSelect('Urgency', 'urgency', urgencyLevels)}</Grid>
                         <Grid item xs={12} md={6}>{renderSelect('Capability Lane', 'capabilityLane', capabilityLanes)}</Grid>
-                        <Grid item xs={12} md={6}>
-                            <FormLabel sx={{color: theme.palette.common.black}}>Tag</FormLabel>
-                            <Select
-                                value={form.tagId}
-                                onChange={(e: SelectChangeEvent<string>) => setFormValue('tagId', e.target.value)}
-                                size="small"
-                                sx={{...inputFieldStyle, mb: 2, width: '100%'}}
-                            >
-                                <MenuItem value="">
-                                    <em>None</em>
-                                </MenuItem>
-                                {availableTags.map((tag) => (
-                                    <MenuItem key={tag.id} value={tag.id.toString()}>
-                                        {tag.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </Grid>
                     </Grid>
                     {renderSimilarIdeas()}
                     {renderTextField('Title', 'title', true)}

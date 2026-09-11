@@ -132,6 +132,12 @@ export const Header = () => {
                 open={isOpen}
                 onClose={handleClick}
                 sx={{ display: { md: 'none' } }}
+                PaperProps={{
+                    sx: {
+                        mt: {xs: '72px', sm: '88px'},
+                        height: {xs: 'calc(100% - 72px)', sm: 'calc(100% - 88px)'},
+                    }
+                }}
             >
                 <List sx={{minWidth: 260}}>
                     {menuItems.map((item) => (
